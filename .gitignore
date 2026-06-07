@@ -53,6 +53,7 @@ data/raw/*
 # Ignore model artifacts by default, then allow the final lightweight router
 /models/*
 !models/utility_prediction_realtime.pkl
+!models/neural_utility_router.pkl
 
 # Ignore intermediate/debug result folders if recreated later
 results/debug/

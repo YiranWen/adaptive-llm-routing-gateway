@@ -9,9 +9,9 @@ CSCI 184: Machine Learning and Reinforcement Learning
 
 Large language model applications increasingly face a practical deployment tradeoff: strong cloud models usually provide high answer quality, but they also introduce monetary cost, network latency, and dependency on external APIs. Smaller local models are inexpensive and fast to access, but they can produce lower-quality answers on difficult prompts. This project implements and evaluates an Adaptive LLM Routing Gateway that learns to route each incoming prompt either to a local language model or to a cloud language model. The routing decision is based on both semantic prompt features and real-time system features.
 
-The system uses Qwen2.5-0.5B-Instruct as a local feature extractor. Instead of asking Qwen to generate an answer, the gateway performs only a forward pass and extracts a 896-dimensional activation feature from the second-to-last transformer layer. This semantic feature is concatenated with six runtime features: CPU utilization, memory utilization, battery level, session budget, estimated local latency, and estimated cloud latency. The resulting 902-dimensional context vector is used by two learned routers. The first is a PyTorch Multi-Layer Perceptron classifier that predicts whether the local model will fail. The second is a Utility Prediction Router based on Ridge Regression that directly predicts Utility(local) and Utility(cloud), then chooses the higher-utility route.
+The system uses Qwen2.5-0.5B-Instruct as a local feature extractor. Instead of asking Qwen to generate an answer, the gateway performs only a forward pass and extracts a 896-dimensional activation feature from the second-to-last transformer layer. This semantic feature is concatenated with six runtime features: CPU utilization, memory utilization, battery level, session budget, estimated local latency, and estimated cloud latency. The resulting 902-dimensional context vector is used by learned routers. The earlier baseline is a PyTorch Multi-Layer Perceptron classifier that predicts whether the local model will fail. The final report-facing comparison focuses on two utility prediction models: a Ridge Regression Utility Router and a Neural Utility Router. Both directly predict Utility(local) and Utility(cloud), then choose the higher-utility route.
 
-The project uses a RouteLLM-style offline dataset to simulate local and cloud model quality without making paid API calls during training. The main evaluation compares Always Local, Always Cloud, MLP Classifier, Utility Prediction Router, and Oracle policies under three service-level agreement modes: quality-first, balanced, and cost-sensitive. The primary metric is Average Utility, defined as Quality minus alpha times Cost minus beta times Latency. Results show that the Utility Prediction Router achieves higher Average Utility than the MLP baseline across all three SLA modes. The final implementation includes a Streamlit debug dashboard and a FastAPI routing gateway with optional Ollama and OpenAI backends.
+The project uses a RouteLLM-style offline dataset to simulate local and cloud model quality without making paid API calls during training. The main evaluation compares Ridge Regression and Neural Network utility predictors under three service-level agreement modes: quality-first, balanced, and cost-sensitive. The primary metric is Average Utility, defined as Quality minus alpha times Cost minus beta times Latency. Results show that the Neural Utility Router achieves higher Average Utility, lower prediction error, lower regret, and higher oracle utility ratio than the Ridge Regression baseline across all three SLA modes. The final implementation also includes a Streamlit debug dashboard and a FastAPI routing gateway with optional Ollama and OpenAI backends.
 
 
 2. Introduction
@@ -20,7 +20,7 @@ Modern LLM systems are no longer just single-model chat interfaces. Many real ap
 
 This project treats LLM routing as an AI infrastructure problem. The router does not generate the final answer itself. Instead, it controls which model should answer the prompt. This makes the router part of the inference stack, similar to a load balancer or scheduler, but with machine learning features and a quality-cost-latency objective. The final system is called the Adaptive LLM Routing Gateway because it adapts to both the prompt and the current system state.
 
-The project originally explored contextual bandit routing, but the final scope is intentionally simplified around two main algorithms: a supervised MLP Classifier baseline and a Utility Prediction Router. This final framing is clearer for a machine learning course project because it compares two different supervised formulations of the same routing problem. The MLP asks, “Will the local model fail?” The Utility Prediction Router asks, “Which route gives higher deployment utility under this SLA and system state?” The second question is more directly aligned with the actual system objective.
+The project originally explored contextual bandit routing, but the final scope is intentionally simplified around supervised utility prediction. The MLP classifier remains a useful baseline because it asks, “Will the local model fail?” However, the main final comparison asks a more deployment-aligned question: “Which route gives higher utility under this SLA and system state?” To answer that question fairly, the project compares a linear Ridge Utility Router against a nonlinear Neural Utility Router using the same inputs, outputs, and evaluation metrics.
 
 Insert Figure 1 here.
 
@@ -210,12 +210,18 @@ The MLP is a strong baseline because it can learn nonlinear relationships betwee
 
 8. Utility Prediction Router Method
 
-The final selected router is the Utility Prediction Router. It is not a neural network. It is a supervised regression pipeline using StandardScaler, optional PCA, and Ridge Regression. The model predicts two outputs for each input context:
+The final selected formulation is Utility Prediction. Instead of only predicting whether the local model will fail, the router predicts the utility of each available route. The project now compares two utility prediction models:
+
+Model 1: Ridge Utility Router. This is a regularized linear regression baseline using StandardScaler and Ridge Regression.
+
+Model 2: Neural Utility Router. This is a nonlinear multi-layer neural network implemented in PyTorch. It predicts the same two utility outputs as Ridge Regression, but can learn nonlinear interactions between prompt activations, system load, budget, latency, and SLA weights.
+
+Both models predict two outputs for each input context:
 
 Utility(local)
 Utility(cloud)
 
-The routing decision is:
+The routing decision is the same for both models:
 
 If Utility(cloud) > Utility(local), route cloud.
 Otherwise, route local.
@@ -549,4 +555,3 @@ Insert in Section 14 after the paragraph describing the dashboard.
 
 Figure 10. FastAPI Gateway Deployment Architecture.
 Insert in Section 15 after the endpoint description.
-

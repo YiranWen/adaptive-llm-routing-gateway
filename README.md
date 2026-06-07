@@ -19,7 +19,7 @@ User Prompt
 → 896D prompt embedding
 + CPU / memory / battery / budget / latency features
 → 902D context vector
-→ Utility Prediction Router
+→ Neural Utility Router / Utility Prediction Router
 → Local route or Cloud route
 ```
 
@@ -47,7 +47,7 @@ Traditional ML evaluation artifacts for the classifier include accuracy, precisi
 
 ### Utility Prediction Router
 
-`src/llm_router/utility_prediction.py` implements the final selected router. It predicts two continuous utility scores:
+`src/llm_router/utility_prediction.py` implements the Ridge Regression utility baseline. It predicts two continuous utility scores:
 
 ```text
 Utility(local)
@@ -60,11 +60,23 @@ The route with the higher predicted utility is selected. Utility is defined as:
 Utility = Quality - alpha * Cost - beta * Latency
 ```
 
-The current implementation uses a stable Ridge Regression pipeline:
+This baseline uses a stable Ridge Regression pipeline:
 
 ```text
 StandardScaler → optional PCA → Ridge Regression
 ```
+
+### Neural Utility Router
+
+`src/llm_router/neural_utility.py` implements a nonlinear neural utility predictor. It solves the same task as Ridge Regression:
+
+```text
+input  = 902D real-time context + SLA weights alpha/beta
+output = [Utility(local), Utility(cloud)]
+route  = argmax(predicted utilities), with a dev-tuned cloud margin
+```
+
+The neural router is used for the newer report-facing comparison because it can learn nonlinear interactions between Qwen prompt activations, system load, budget, latency, and SLA preference.
 
 ### Streamlit Dashboard
 
@@ -97,6 +109,7 @@ The final offline experiment compares:
 - Always Cloud
 - MLP Classifier
 - Utility Prediction Router
+- Neural Utility Router
 - Oracle / Ground-Truth Best Route
 
 The oracle is computed offline as the route with the higher true utility for each validation example. It is an upper bound, not a deployable policy.
@@ -129,12 +142,15 @@ The traditional metrics show whether a model matches labels. The system-level me
 
 ## Key Results
 
-In the current course-scale evaluation, the Utility Prediction Router achieves higher average utility than the MLP baseline across the configured SLA modes. Regret analysis shows that many route disagreements have small utility loss, so strict binary routing accuracy can understate the router's practical value.
+In the current course-scale evaluation, the Neural Utility Router outperforms the Ridge Utility Router across all configured SLA modes using the same utility-prediction task and the same validation split. It achieves higher average utility, lower regression error, lower mean regret, and higher oracle utility ratio.
+
+The earlier Ridge Utility Router also achieves higher average utility than the MLP classifier baseline, which motivates the project shift from failure classification to utility prediction.
 
 The Qwen activation features also provide useful semantic signal for local-failure prediction. A cleaned classifier evaluation reaches ROC-AUC around `0.70` on the small validation split, but the dataset is imbalanced and contains few positive local-failure examples.
 
 Core result files:
 
+- `results/neural_utility_comparison_metrics.csv`
 - `results/realtime_aligned_metrics.csv`
 - `results/utility_router_regret_metrics.csv`
 - `results/utility_router_regression_error_metrics.csv`
@@ -248,6 +264,7 @@ python scripts/evaluate_realtime_aligned.py
 Traditional ML evaluation:
 
 ```bash
+python scripts/evaluate_neural_utility_router.py
 python scripts/evaluate_traditional_ml.py
 python scripts/evaluate_utility_regression_metrics.py
 python scripts/plot_classifier_roc_curves.py
@@ -303,7 +320,7 @@ python scripts/cache_activation_features.py
 - The offline split is small and imbalanced.
 - Serving-state features are synthetically augmented because RouteLLM-style datasets do not include live CPU, memory, battery, budget, or latency logs.
 - Cloud quality is fixed to `1.0` in the sandbox table.
-- The final Utility Prediction Router uses Ridge Regression, which is linear.
+- The Ridge Utility Router is linear; the newer Neural Utility Router reduces this limitation but is still a course-scale prototype.
 - Real production use would need live traffic logs, real latency/cost measurements, and more robust model monitoring.
 
 ## Future Work

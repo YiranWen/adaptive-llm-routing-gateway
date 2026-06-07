@@ -514,16 +514,16 @@ The MLP predicts failure, not utility. This means it can route cloud even when c
 
 ---
 
-## 9. Utility Prediction Router
+## 9. Utility Prediction Routers
 
-Utility Prediction is the final selected model.
+The final project now frames routing as utility prediction. The Ridge Utility Router is the linear baseline, and the Neural Utility Router is the stronger nonlinear model used for the main final comparison.
 
 ### Formulation
 
 Input:
 
 ```text
-902D augmented context
+902D augmented context + SLA weights alpha/beta
 ```
 
 Targets:
@@ -532,6 +532,8 @@ Targets:
 utility_local
 utility_cloud
 ```
+
+Both models choose the route with higher predicted utility. The Neural Utility Router is implemented in `src/llm_router/neural_utility.py` and evaluated by `scripts/evaluate_neural_utility_router.py`.
 
 Decision:
 
@@ -835,14 +837,15 @@ The simplified final message:
 
 MLP is a useful baseline because it predicts local failure from the same context vector. However, it does not directly optimize the deployment objective.
 
-Utility Prediction is the final selected model because:
+Utility Prediction is the final selected formulation because:
 
 - it uses the same context as the real-time demo;
 - it predicts local and cloud utility directly;
-- it outperforms MLP in current real-time aligned offline metrics;
+- it allows Ridge Regression and Neural Networks to be compared on the same regression and routing metrics;
+- the Neural Utility Router outperforms the Ridge Utility Router in the current final utility-prediction experiment;
 - it is easier to deploy in a Streamlit gateway and FastAPI service;
 
-The final report should frame the system as a utility-aware LLM routing gateway with an MLP classifier baseline and Utility Prediction Router.
+The final report should frame the system as a utility-aware LLM routing gateway with an MLP classifier baseline, a Ridge Utility Router baseline, and a Neural Utility Router final model.
 
 ---
 
@@ -861,4 +864,3 @@ The final report should frame the system as a utility-aware LLM routing gateway 
 | `results/plots/realtime_aligned_cloud_rate.png` | Report-ready cloud route rate plot |
 | `src/llm_router/mlp_router.py` | MLP baseline |
 | `src/llm_router/utility_prediction.py` | General Utility Prediction helper |
-
