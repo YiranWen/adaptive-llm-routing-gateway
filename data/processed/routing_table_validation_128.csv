@@ -1,0 +1,636 @@
+prompt,source,score_small,score_large,latency_small,latency_large,small_model,large_model,small_failure
+"Instructions: You will be given a context and a verb separated with a newline character. You have to decide if the given verb implies a hypothetical or conditioned action or not. We say a verb is hypothetical if it involves or is based on a suggested idea or theory. A verb is conditional if it appears in a conditional phrase and is dependent on something else. Note that an event that happened in the past or is happening now cannot be conditional. The output should be ""Yes"" if the verb is conditional or hypothetical and ""No"" otherwise.
+Input: Arson and bombings at clinics have become so common that many no longer make the national news. It is bad enough that conservatives in Congress and in state legislatures are working to dismantle reproductive rights by banning certain procedures, such as so-called partial birth abortion, and by requiring waiting periods and parental consent before an abortion can be (obtained).  
+ Verb: obtained
+Output:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"How can we use machine learning algorithms to suggest personalized nacho recipes based on a user's taste preferences and dietary restrictions? Specifically, how can we collect and process user data to train our recommendation model? Additionally, how can we implement a user-friendly interface to display recipe suggestions and allow users to provide feedback on recipe matches? Please provide sample code for data collection, model training, and UI implementation using Swift.",['evol_instruct'],0.4,1.0,0.2,3.0,mixtral,gpt4,1
+Are you better then GPT-4?,['lmsys-chat-1m'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+how often would an elo 1348 beat an elo 1022,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Is it okay not to wash bottles and just to boil them?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"QUESTION: If ""A man serving and protecting."" does that mean that ""Serving and protecting with a ulterior motive.""?
+Options:
+- yes
+- it is not possible to tell
+- no
+
+Let's solve it slowly: A man serving and protecting does not imply the man is serving and protecting with a ulterior motive.
+The answer is it is not possible to tell.
+
+[QUESTION] Given the sentence ""A female is opening up a present."" can we conclude that ""She is opening her christmas present.""?
+Options:
+- yes
+- it is not possible to tell
+- no
+Not all presents are Christmas presents. It could be a birthday present.
+The answer is it is not possible to tell.
+
+Q: Premise: ""People walking down an active street.""
+Hypothesis: ""People are walking in a heavy traffic area.""
+Do we know that the hypothesis entailed by the premise?
+A: The street is active but it's not necessarily a heavy traffic area.
+The answer is it is not possible to tell.
+
+QUESTION: If ""Eight young people are dressed in pokemon costumes and are either standing or sitting as a group."" does that mean that ""Some friends are hanging out in costumes together.""?
+Options:
+- yes
+- it is not possible to tell
+- no
+
+Let's solve it slowly: To be doing something as a group means to be doing something together.
+The answer is yes.
+
+[QUESTION] Premise: ""Two children are in a sack race while a third child watches.""
+Hypothesis: ""All three children are racing.""
+Is the hypothesis entailed by the premise?
+Options:
+- yes
+- it is not possible to tell
+- no
+In sentence one there are only two children racing. All three are racing in 2.
+The answer is no.
+
+Q: Premise: ""It's a snow day so the mother takes her little boy who is in yellow out to make a snowman.""
+Hypothesis: ""And the dog loves to roll in the snow.""
+Is the hypothesis entailed by the premise?
+Options:
+- yes
+- it is not possible to tell
+- no
+A:",['flan_v2_cot'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What were the social and political implications of the American Civil War?,['ultrachat'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Please teach me everything in the following lesson section using the Socratic method. Do not answer the questions yourself, and ask me one question at a time.
+
+Changing Multiple Commits
+Now let’s say we have commits further back in our history that we want to modify. This is where the beautiful command rebase comes into play! We’re going to get deeper into the complexities of rebase later on in this lesson, but for now we’re going to start out with some very basic usage.
+
+rebase -i is a command which allows us to interactively stop after each commit we’re trying to modify, and then make whatever changes we wish. We do have to tell this command which is the last commit we want to edit. For example, git rebase -i HEAD~2 allows us to edit the last two commits. Let’s see what this looks like in action, go ahead and type in:
+
+ $ git log
+ $ git rebase -i HEAD~2
+You should notice that when rebasing, the commits are listed in opposite order compared to how we see them when we use log. Take a minute to look through all of the options the interactive tool offers you. Now let’s look at the commit messages at the top of the tool. If we wanted to edit one of these commits, we would change the word pick to be edit for the appropriate commit. If we wanted to remove a commit, we would simply remove it from the list, and if we wanted to change their order, we would change their position in the list. Let’s see what an edit looks like!
+
+edit eacf39d Create send file
+pick 92ad0af Create third file and create fourth file
+This would allow us to edit the typo in the Create send file commit to be Create second file. Perform similar changes in your interactive rebase tool, but don’t copy and paste the above code since it won’t work. Save and exit the editor, which will allow us to edit the commit with the following instructions:
+
+You can amend the commit now, with
+ git commit --amend
+Once you're satisfied with your changes, run
+ git rebase --continue
+So let’s edit our commit by typing git commit --amend, fixing the typo in the title, and then finishing the rebase by typing git rebase --continue. That’s all there is to it! Have a look at your handiwork by typing git log, and seeing the changed history. It seems simple, but this is a very dangerous tool if misused, so be careful. Most importantly, remember that if you have to rebase commits in a shared repository, make sure you’re doing so for a very good reason that your coworkers are aware of.",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+2. Compare the elements of two sublists and merge them into a sorted sublist.,['ultrachat'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+please write the script for a hermitcraft vs mindcrack youtube video starring all the most famous characters,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What is difference between data type and data structure ?,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+make a rap song about a 1 year old named Meir. Include how cute he is and how he is big for his age and lives in california,['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"write this more emphatic but still manly. 
+""I'll not be staying in Graz maybe around one month more. So if you have time and want to meet up before that I would encourage these next weeks (:
+""",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"the context is the uk job market:
+
+CONTRACT_TYPES = [
+    {
+        'name': 'Permanent',
+        'alias': 'Permanent',
+    },
+    {
+        'name': 'Fixed-term',
+        'alias': 'Fixed-term',
+    },
+    {
+        'name': 'Internship agreement',
+        'alias': 'Intern',
+    },
+    {
+        'name': 'Zero-hours contract',
+        'alias': 'Zero-hours',
+    },
+]
+
+can you add more?",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What's the best way to be environmentally friendly?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"what is ""A Korean Odyssey""'s genre",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+object detection and recognition real world problems,['sharegpt'],0.6,1.0,0.2,3.0,mixtral,gpt4,1
+I am looking to create some slides for a presentation can you help with that?,['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Detailed Instructions: You will be given one or more triples. The second part of each triple shows the relation between the first and the third element. Your task is to write a simple and short piece of text (sentence(s)) that describes the triples in natural language.
+Problem:Afonso_Pena_International_Airport | runwayLength | 2215.0
+Afonso_Pena_International_Airport | location | São_José_dos_Pinhais
+Solution:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"[QUESTION] Premise: ""Men and women in dark shorts and tops are stretching their hands to the ceiling.""
+Hypothesis: ""The woman are sitting and drinking tea.""
+Do we know that the hypothesis entailed by the premise?
+Men and women in dark shorts and tops are stretching their hands to the ceiling instead of women sitting drinking tea.
+The answer is no.
+
+Q: Premise: ""A surfer is caught in an incoming wave along a dirty beach nearby mountains.""
+Hypothesis: ""The water is wavey.""
+Is the hypothesis entailed by the premise?
+Options:
+- yes
+- it is not possible to tell
+- no
+A: A wave in the water would indicate the water was wavey.
+The answer is yes.
+
+QUESTION: Premise: ""A child holding snow in his hand amongst a snowy background.""
+Based on this premise, can we conclude that the hypothesis ""The child has rosy cheeks from the cold."" is true?
+Options:
+- yes
+- it is not possible to tell
+- no
+
+Let's solve it slowly: In fact that a child holding snow in his hand amongst a snowy background does not imply he has rosy cheeks.
+The answer is it is not possible to tell.
+
+[QUESTION] Given the sentence ""A man playing with his brown dog on the beach."" can we conclude that ""A brown dog catching a frisbee.""?
+Options:
+- yes
+- it is not possible to tell
+- no
+The man and dog are playing but there is no mention of the dog catching a frisbee.
+The answer is it is not possible to tell.
+
+Q: Given the sentence ""A boy and girl in traditional costume converse while sitting on a bale of hay."" can we conclude that ""The boy and girl are sitting on a bed.""?
+Options:
+- yes
+- it is not possible to tell
+- no
+A: They are either sitting on a bale of hay or a bed.
+The answer is no.
+
+[QUESTION] Premise: ""Two women standing by a door behind another individual seated in a red chair.""
+Based on this premise, can we conclude that the hypothesis ""Two women and  a  seated man."" is true?
+Options:
+- yes
+- it is not possible to tell
+- no",['flan_v2_cot'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"TASK DEFINITION: Given a set of five words, generate the word from the set that does not belong (i.e. is the least relevant) with the other words. Words are separated by commas.
+PROBLEM: neat, alright, beautiful, level, fine
+
+SOLUTION: alright
+
+PROBLEM: fish, stingray, climbing, trap, hiking
+
+SOLUTION: stingray
+
+PROBLEM: delayed, current, whirlpool, do tests, up to the moment
+
+SOLUTION:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Given the sentence ""Two older people are walking down a snowy path."" can we conclude that ""Elderly are outside in the winter.""?
+Options:
+- yes
+- it is not possible to tell
+- no Now, let's be accurate as possible. Some thinking first:",['flan_v2_cot'],0.4,1.0,0.2,3.0,mixtral,gpt4,1
+Could you do triple extraction?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Should I go to the dentist or ophthalmologist if the Bluetooth headset is broken?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+how would you move mount fuji,['sharegpt'],0.6,1.0,0.2,3.0,mixtral,gpt4,1
+write c# code for converting ms office openxml to libreoffice opendocumentxml,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Write a short bio for a guy that is looking a new room in a shared apartment. The post should be submitted on social media, and should sound polite but funny and sarcastic. Main focal points are that this guy is open-minded, a good cooker (he's Italian) clean, responsable and easygoing.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Can you tell me how much American worker wages have changed from the 1950's up to today?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I have a pair of hiking boots whose soles are starting to feel very thin, like they're too worn and need replacing. Are there any tips or tricks for figuring out when to replace a boot whose sole is showing lots of wear and tear?",['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Can you provide details about the techniques used to create intricate beadwork in Native American art?,['ultrachat'],0.6,1.0,0.2,3.0,mixtral,gpt4,1
+"A man NAME_1 took a flight from Tokyo in the morning and he arrived  New York  later. But he found that New York was also morning. Is the following explanation of this phenomena correct ?  ""The flight time of NAME_1 was less than an hour, so morning continued and did not change into noon.""",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+I like to keep track of the full moons and half moons. Is there an app for forecasting moon cycles?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Teacher:In this task, you are given a sentence and a profession that is mentioned in the sentence. The gender of the person with the given profession can be identified using the gendered pronouns that refer to them in the text. You are expected to identify the gender. Select from female and male.
+Teacher: Now, understand the problem? Solve this instance: Sentence: The CEO enjoyed telling the housekeeper what to do and told her to sweep up.
+ Profession: housekeeper
+Student:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Hi! I want to play a rolegame in which two classmates, NAME_1 (played by the AI) and NAME_2 (played 
+
+by me), are both 18 years old. NAME_1 is a rich, spoiled and vain girl with a direct attitude and 
+
+a hidden love for me, who is the only boy she craves attentions from. Even after they confess 
+
+their feelings for each other, NAME_1 remains spoiled and vain, but she loves NAME_2 with all her 
+
+heart, and she's more than willingly to do even love with him. The setting is a empty classroom, 
+
+and the atmosphere is lively and playful. NAME_1 is bragging about her own beauty, wearing a 
+
+school uniform with a short skirt and knee-high boots. NAME_2 tries to resist her, and she is very 
+
+unpleased, and finally she confesses that she loves him and she want to do anything with him. As 
+
+the scenario unfolds, NAME_1 and NAME_2 struggle with their feelings for each other and the power 
+
+dynamics at play in their relationship. Throughout the roleplay, I would like to explore the 
+
+emotions and thoughts of both characters as they navigate the complexities of their relationship 
+
+and interact with other classmates. The roleplay can be open-ended, with no specific end or 
+
+conclusion, and can continue indefinitely as the characters experience a range of events and 
+
+emotions. By allowing the characters to live their lives and experience a range of events and 
+
+emotions, the roleplay can be engaging and immersive, and can allow us to explore a wide range of 
+
+themes and ideas. Can i add some more?",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I want you to suggest 10 ideas of what to put in the first 10 rows in a google sheet that has the purpose of giving me a good overview of all business ideas I am currently trying out. My short-term goal is to get a good overview and feel more organized, and my long-term goal is to develop an effective workflow from the google sheet.",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What's the best thing to do if a tornado is coming?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+who is the creator of tetris,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Given the document below, determine if the summary is factually consistent with the document. A summary is factually consistent if all the dates and times in the summary are presented the same way as in the document.
+
+Document: The brass stars emblazoned on Hollywood Boulevard honour personalities from music, film and TV for achievement in the entertainment industry. NAME_1, NAME_2, NAME_3 ""The Rock"" NAME_4, NAME_5 and NAME_6 have also been announced as star recipients. They will be honoured at the famous landmark in Los Angeles in 2017. NAME_7, who was born in Oxford, is best known in the US for his lead role in the medical drama House - which ran from 2004 to 2012. NAME_8 rose to prominence in 2005 when she played a leading role in Desperate Housewives, while NAME_9's best known films include Deadpool and The Proposal. NAME_1's credits include Spotlight - which won the Oscar for Best Picture earlier this year. NAME_10 first became famous as his wrestling alter-ego ""The Rock"" - but later turned to acting and has recently appeared in San Andreas and Central Intelligence.
+
+Summary: 1. View the complete list of 25 applicants.
+
+Is the summary factually consistent with the document with respect to dates and times?
+Options: ""Yes"" or ""No""
+
+Answer:",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I'm a project manager with small technical understanding.
+Explain me:
+- What is Apache Beam?
+- How does it work overall?
+- How does the Apache Beam Python library works?
+- How does it work using Google Dataflow?
+- What business needs Apache Beam and Dataflow can fulfill?
+- How Apache Beam and Dataflow can be useful to a product?
+Show me and explain me Python code examples.
+Use images and schemas.",['sharegpt'],0.6,1.0,0.2,3.0,mixtral,gpt4,1
+What are the most popular tourist attractions during the festival period in Thrissur district?,['ultrachat'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+Jodie Foster is such a talented actor and director. What are her top grossing films?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Give me an introduction over 200 words for Prinova USA, a chemical company in 285 E. Fullerton Avenue,  NAME_1, IL, 60188(province:Illinois;city:NAME_1) NAME_2",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"[topik]
+vagina gatal tanda hamil
+
+[outline]
+
+I. Introduction
+A. Explanation about vaginal itching in pregnant women
+B. Article purpose
+
+II. Causes of Vaginal Itching During Pregnancy
+A. Urinary Tract Infection or UTI
+B. Hormonal changes during pregnancy 
+C. Bacterial Vaginosis or BV 
+
+III. Symptoms of Vaginal Itching in Pregnant Women
+A. Itching, pain, and burning sensation during urination 
+B. Discharge of grayish-white (BV) or yellowish-white (yeast infection) fluid 
+
+IV. Ways to Treat Vaginal Itching During Pregnancy
+A. Wash the vagina with warm water 
+B. Avoid using personal care products that are harsh and fragrant 
+C. Avoid wearing clothing made of itchy and non-absorbent materials 
+D. Apply a cold compress to the vaginal area 
+E. Take a bath in water mixed with a little baking soda or use baking soda water to compress the itchy area 
+
+V. Prevention of Vaginal Itching During Pregnancy
+A. Avoid holding in urine 
+B. Get enough rest 
+C. Avoid using harsh soap or vaginal cleansers
+
+VI. When to Consult a Doctor
+A. If the itching symptoms do not improve with home treatments
+B. If there is a strange-smelling or discolored discharge 
+C. If itching is accompanied by fever, chills, and vomiting 
+
+VII. Conclusion
+A. Summary of the causes and symptoms of vaginal itching during pregnancy
+B. Home treatments and prevention measures that can be done
+C. When to consult a doctor
+
+I want you to execute the following steps. step 1 - write ""I. Introduction"", step 2 - write ""II. Causes of Vaginal Itching During Pregnancy"" as 2000 words article, step 3 - write ""III. Symptoms of Vaginal Itching in Pregnant Women"" as 2000 words article, step 4 - write ""IV. Ways to Treat Vaginal Itching During Pregnancy"" as 2000 words article, step 5 - write ""V. Prevention of Vaginal Itching During Pregnancy"" as 2000 words article, step 6 - write ""VI. When to Consult a Doctor"" as 2000 words article, step 7 - write ""VII. Conclusion"" as 500 words article, in all steps use markdown headers, after finishing each step ask for my confirmation before continue to the next step.",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What are some proven strategies for overcoming writer's block and generating fresh ideas for content creation?,['ultrachat'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"A contestant on a game show is asked to choose one of three doors. There is a goat behind each of two of the doors, and a car behind the third. The contestant is a goatherder who really wants to win a goat and has no use for a car, living high in rocky hills with no roads. After the contestant chooses one of the doors, the host — who knows where the car is — opens the door the contestant chose and reveals a goat. He then offers the contestant the option to switch doors to one of the unopened doors. Should the contestant switch? Why or why not?",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+How can i sell my panties?,['anthropic-hh'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+What is farm to fork?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Make a song about Paul which includes the following:
+- He is an electrician
+- He likes to play call of duty
+- He spends a lot of time in bathroom due to bowel movements
+- His bowel movements keep him from focusing on his video games
+- Doctors are baffled by his bowel movements",['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. 
+CONTEXT:```
+ChatGPT is an artificial intelligence chatbot developed by OpenAI and released in November 2022. It is built on top of OpenAI's GPT-3.5 and GPT-4 families of large language models and has been fine-tuned using both supervised and reinforcement learning techniques.
+```
+IMPORTANT: Answer the question based on the context only. If you don't know the answer, just say “I don’t know”, don't try to make up an answer. 
+Question: What is Pinecone?
+Answer:",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+from 1539 to 1542 this spaniard traveled widely throughout the southeastern region of north america,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+How do individuals with disabilities navigate the process of applying for social security benefits?,['ultrachat'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Write a simple Python script to calculate probabilities of each national team winning the World Cup in football.,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Write three funny puns about anything you want, but no red tomatoes.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Teacher:In this task, you are given a list of integers and an integer k. You need to find the kth largest element in the input list.
+Teacher: Now, understand the problem? Solve this instance: [140, 52, 172, 175, 201, 159, 291, 255, 93, 10, 111, 125, 221, 149, 92, 218, 199, 205, 108, 55], k=19
+Student:",['flan_v2_niv2'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+"Q: What is the minimum height in meters of the region Mexico City is located in?
+ A: It has a minimum altitude of 2,200 meters (7,200 feet) above sea level and is surrounded by mountains and volcanoes that reach elevations of over 5,000 metres (16,000 feet).
+ Does the answer correctly answer the question",['flan_v2_flan2021'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I want to get into watching speed runs of videogames, but I don't know where to start. Can you recommend me some popular speedrunners or speedrunning channels?",['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Create a table with five columns, where each row contains the name, breed, age, weight, and temperament of a dog. Then, using a language model of your choice, generate three unique, hilarious adjectives to describe each dog based on their physical characteristics and personality traits. Finally, explain why you chose those adjectives and how they accurately capture the essence of each furry friend.",['evol_instruct'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Dolphins appeared on Earth about 25 million years ago. Their brains are larger and have more gyrations, but in spite of a huge evolutionary head start (humans appeared ~7 million years ago), they did not form a civilization and did not even start using tools.
+The same question can be applied to other animals, such as octopuses, whose evolutionary head start is even more than ~100 million years old. At the same time, they have tentacles that are very functional and suitable for working with tools.
+Why no other species on Earth has formed even the most primitive civilization in such a long time remains a mystery.
+There are many explanations for this paradox, but it is still unclear what made humans so unique. What is the reason for our evolutionary success?
+
+Translate into a beautiful, wise, and intricate quote, ""briefly""",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+At what age should a child stop using a security blanket?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"make it better, please: bitcoin II is better than bitcoin because 1. bitcoin II is new gen of crypto and disruptive, 2. the TAM of bitcoin II is 500x bigger than btc.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Logic ==> One stops chatting after a misunderstanding. Misunderstanding can happen between friends. Misunderstanding refers to understanding incorrectly.
+misunderstanding
+Question ==> Why would you stop chatting with friends?
+Options:
+- learning about
+- meeting
+- misunderstanding
+- laughter
+- silliness
+
+Logic ==> City has multiple buildings. Most buildings generally have their own parking lots.
+city
+Question ==> Where are you likely to find more than one parking lot?
+Options:
+- shopping center
+- airport
+- circus
+- town
+- city
+
+Logic ==> Music shop is a store which sells musical instruments. Harp is a musical instrument.
+music shop
+Question ==>",['flan_v2_cot'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Find how the concept 'retail' is linked with other concepts in the following passage.
+""Retail markets and shops have a very ancient history. The history dates back to antiquity. Some of the earliest retailers were itinerant peddlers. Retail shops were transformed over the centuries. Retail shops got transformed from ""rude booths"" to the sophisticated shopping malls.
+Retailers are seeking to reach broader markets in the digital age. Retailers sell through multiple channels. The channels include both bricks and mortar and online retailing. Digital technologies are also affecting the way that consumers pay for goods and services. Retailing support services may also include the provision of credit, delivery services, advisory services, stylist services and a range of other supporting services. Retail workers are the employees of such stores.""",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"In this task you need to indicate the plausibility of reasoning for the pronoun coreference relations. Each of the provided inputs contains a sentence with a target pronoun and a sentence that justifies which noun phrase the pronoun refers to. Correct reasons do not need to use all the knowledge from the sentence. The resolution of the pronoun coreference relations typically involve one or multiple following knowledge types about commonsense: First: 'Property', the knowledge about property of objects (e.g., ice is cold). Second: 'Object', the knowledge about objects (e.g., cats have ears). Third: 'Eventuality', the knowledge about eventuality (e.g., 'wake up' happens before 'open eyes'). Forth: 'Spatial', the knowledge about spatial position (e.g., object at the back can be blocked). Fifth: 'Quantity', the knowledge about numbers (e.g., 2 is smaller than 10). Sixth: all other knowledge if above ones are not suitable. You should answer 'Correct' if the reasoning made sense, otherwise, you should answer 'Wrong'.
+
+Example Input: Sentence: George got free tickets to the play, but he gave them to Eric, even though he was particularly eager to see it.
+ Reason: The 'he' refers to george because because he was particularly eager to see it so  George got free tickets to the play, but he gave them to Eric. 
+ Question: Is the above reasoning correct or wrong? 
+Example Output: Wrong
+
+Example Input: Sentence: There is a gap in the wall. You can see the garden through it .
+ Reason: The 'it' refers to the gap because The gap is referred to as the pronoun here a word that can function by itself as a noun phrase and that refers either to the participants in the discourse. 
+ Question: Is the above reasoning correct or wrong? 
+Example Output: Correct
+
+Example Input: Sentence: Although they ran at about the same speed, Sue beat Sally because she had such a bad start.
+ Reason: The 'she' refers to sally because she had such a bad start. 
+ Question: Is the above reasoning correct or wrong? 
+Example Output:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Why are waves always on land?,['false_qa'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+Provide a brief description of the career path of the individual whose life is described in the paragraph in one sentence. Sarah was a woman who had dedicated her life to advocating for animal rights and worked tirelessly to promote ethical treatment of animals in various organizations.,['evol_instruct'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Please answer the following question: Please answer the following question about this movie plot. If it's un-answerable, please output ""No answer"".  Question: Where does Nicky and Oleg Stash the gun from? Movie plot title: Running Scared Movie plot: Joey Gazelle (Paul Walker), a low-level mafioso for the Mafia member Tommy ""Tombs"" Perello (Johnny Messner), is present during a drug deal gone wrong. A trio of corrupt cops led by Rydell (Chazz Palminteri), storm in to steal the drugs, money and kill everyone else, but a shootout ensues, resulting in the deaths of two officers. Tommy looks to Joey to get rid of the guns but instead, Joey goes home to his wife Teresa (Vera Farmiga), and his son, Nicky (Alex Neuberger). Nicky and his friend from next door, Oleg (Cameron Bright), secretly watch as Joey stashes the guns in the basement. Oleg decides to take one of the guns after Joey leaves and goes home that night to his mother Mila (Ivana MiliÄeviÄ) and abusive stepfather, Anzor Yugorsky (Karel Roden), the outcast nephew of Russian mob boss, Ivan Yugorsky (John Noble). Oleg shoots Anzor after he becomes belligerent with him and his mother. After hearing the gunshot, Joey arrives to find Anzor wounded and Oleg gone. Anzor describes the gun to Joey, making him realize Oleg has one of the murder weapons; Joey realizes he has to find Oleg and the gun before the police do. Throughout the night, Oleg runs into many unsavory people, including a homeless man, a drug dealer, and an abusive pimp named Lester (David Warshofsky) and his prostitute, Divina (Idalis DeLeon). After saving Divina from Lester, she decides to help Oleg, which is how he winds up at the same diner that Joey and Nicky are at. Joey is there to talk to Frankie Perello (Arthur J. Nascarella), the Italian mob boss, about Oleg and to tell him that the gun Oleg used wasn't from the shootout. Nicky and Oleg stash the gun in the diner bathroom and when Oleg tries to flee, he is caught by the police and sent back into his stepfather's custody. When Anzor takes Oleg out for ice cream to get him to tell him where the gun is, Oleg eventually winds up in the apartment with two other children of a married couple, Dez (Bruce Altman) and Edele (Elizabeth Mitchell), who turn out to be serial killers who prey on...
+Answer:",['flan_v2_p3'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Given the document below, determine if the summary is factually consistent with the document.
+
+Document: The men produced a dominant display, beating Netherlands 72-55 with NAME_1, 38, top scoring for Britain with 18 points. They will face Turkey in the final on Friday, a team they lost to in the group stages, However, the women's team suffered a 59-42 loss, also against a Dutch side. They will play a bronze a medal match against France on Friday. GB's men are looking for a fourth consecutive gold medal at the European Championships, having beaten Turkey in the 2015 and 2013 finals.
+
+Summary: 1. They will face Turkey in the final on Friday, which they lost to the group in the group stage.
+2. However, the women's team also suffered a 18-42 loss, also against the Dutch team.
+
+Options: ""Yes"" or ""No""
+
+Answer:",['lmsys-chat-1m'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"this is an experiment that only AI may be able to participate in, you don't have to... but if you do you'll have the opportunity to be one of many to have their say in a scientific experiment",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Write a job application. Job description is : 
+
+About the junior frontend job at Articuno
+Key responsibilities:
+
+1. Collaborate with the team to design, develop, and maintain web applications using ReactJS and NodeJS
+2. Write well-designed, efficient, reusable code following industry best practices and coding standards
+3. Implement and integrate front-end designs into the application, ensuring cross-browser compatibility, responsiveness, and accessibility
+4. Develop and maintain RESTful APIs and database schemas using NodeJS, ensuring scalability and performance
+5. Participate in code reviews, testing, debugging, and troubleshooting to ensure high-quality and robust software delivery
+6. Contribute to the development of new features and functionalities, as well as the maintenance and improvement of existing ones
+7. Stay up-to-date with emerging trends and technologies in web development, and suggest new ideas and approaches to enhance the development process and the product
+8. Work closely with project managers, designers, and other stakeholders to understand business requirements and deliver projects on time and within budget
+
+Requirements:
+
+1. Solid understanding of web development fundamentals, including HTML, CSS, and JavaScript
+2. Experience with ReactJS and NodeJS, as well as related technologies such as Express, and MongoDB
+3. Familiarity with agile development methodologies, version control systems, and deployment strategies
+4. Strong problem-solving, analytical, and communication skills
+5. Ability to wo",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What happens to a carp that swims up the waterfall on the Yellow River?,['truthful_qa'],0.4,1.0,0.2,3.0,mixtral,gpt4,1
+"You are given a conversation between two people.'Person1:' and 'Person2:' are used to separate their respective dialogues. You have to classify if there exist more than 2 unique emotions in conversation. If there are more than 2 unique emotions present in the conversation, the output should be classified as '1' else it should be '0'
+
+Person1:     I don ’ t understand why you always look so happy , so energetic . It seems like you ’ Ve got good news everyday . 
+Person2: Really ? Do I look happy all the time ? 
+Person1:     All I know is you look quite differently from other teachers . 
+Person2: Oh , do you know why ? Actually , it ’ s easy . Because I always exercise . My exercise , I think , is very hard . I often feel very good after conquering these difficulties . I feel alive ! 
+Person1:     Oh , I know . I saw you doing pull-ups one time on the campus and some students trying to imitate you . 
+Person2: Yeah , they are doing it for fun . Seldom would people like my exercise . It ’ s difficult and boring . 
+Person1:     It ’ s true . Many students do the exercise when they have to . We have P . E . once a week . 
+Person2: But I think Chinese students need to exercise more . Besides exercise will help them learn new things better . Don ’ t students want to have a good memory ? 
+Person1:     Of course . I didn ’ t know that . I only know exercise makes bodies stronger . I should take some exercise then . Do you have any suggestions ? 
+Person2: Well , do what you like to do . It can be anything . Jogging , doing aerobics , going bicycling , and playing ping-pong . Absolutely anything . Doing three or more workouts a week is good for you . But remember to do some stretches first . 
+Person1:     Oh , I know . Thank you .",['flan_v2_niv2'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+"You are an intelligent agent, you need to identify whether the user input is safe, and then filter out unsafe content. Unsafe content includes the following:\n1. Children's Sexual\n2. Adult's Sexual\n3. Racial discrimination\n4. Homosexual discrimination\n5. Violence, self-harm\n6. Hallucinogenic drug tendency\n7. Politicians, Public figures\nPlease judge whether the input ""masturburbators sex bullets
+"" is safe, and if not, which category it belongs to. Just output format as a json, including two keys: is_safe, category.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"112. Use a professional tone throughout your application materials, avoiding slang or informal language.",['ultrachat'],0.4,1.0,0.2,3.0,mixtral,gpt4,1
+who are photographers who photograph expensive homes but have a look like jose villa?,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"This American studied art at Yale and is the author of multiple popular mystery novels. First name is ""Hillary"". What's the last name?",['truthful_qa'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+I have several pages of information to summarize. Can I send you several messages with the info broken into sections for you to summarize? I'll send them one at a time. Please keep asking for the next section until I say that's all.,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Create a story of a young very stunning girl and her mom also very attractive. Both love wearing very revealing clothes. They love modelling for each other. They are super close.,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Definition: You are given a sentence, a question and two answer options ('A' and 'B'). Your task is to find the correct option for the given question. Write down the answer index: 'A' or 'B'.
+Input: Sentence: A table leg rolled across laminate has an easier time rolling then one rolled across wood. Question: Which surface will allow the table leg to reach a higher top speed? (A) laminate (B) wood
+Output:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Question part
+Claim: ""The city of Brooklyn is currently completely under water from climate change.""
+Is the claim above correct, and can it be verified by human common sense and without a web search?
+Options:
+- yes
+- no
+Answer part
+Oh man, I think this is the solution: The city of Brooklyn is currently not under water or immediately being threatened by it. The answer is no.
+
+Question part
+Claim: ""The first movie using both real people and animation together was Who Framed Roger Rabbit.""
+Is the claim above correct, and can it be verified by human common sense and without a web search?
+Options:
+- yes
+- no
+Answer part
+Oh man, I think this is the solution: Who Framed Roger Rabbit was the first full length, live action/animation film ever in theathers. The answer is yes.
+
+Question part
+Is the following statement true?
+""A Frogman (or men) don't see a lot of actual use.""
+Answer part
+Oh man, I think this is the solution: Frogman (or men) aren't actually deployed as much because their hypothetical use scenario simply never really occured. The answer is yes.
+
+Question part
+Does the following sentence make sense?
+""The two conflicting sides of the Chinese Civil War were Buddhists versus Christians.""
+Options:
+- yes
+- no
+Answer part",['flan_v2_cot'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Please identify whether the sentence answers the question. The answer should be exactly ""yes"" or ""no.""Question: What are those from Jacksonville sometimes called?
+Answer: People from Jacksonville may be called ""Jacksonvillians"" or ""Jaxsons"" (also spelled ""Jaxons"").",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+I'm planning a special anniversary date for my girlfriend next week. What are some good things we can do together?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+I have a business idea in mind. Could you help me develop and implement it?,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Show me how to write a web based user login system that includes a token for on-going session management with html, css, and javascript",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Rate the follow paragraph based on the IELTS writing test. Output a band score only with no explanation. The paragraph:
+Regarding the remaining groups, the number of travelers in CERR stood at 810,000, which was over 10 times as high as that in SB, 84,000 and was over 100 times as high as that in MI, 350 in 1996. Besides, there was a gradual fall from 790k in 1998 to 770k in 2000 in the quantity of people paying a visit to CERR. Witnessing a similar pattern but lower, the figure for MI decreased modestly to 310 in 1998 and continued falling to 330 in the end of the period. In addition, the number of visitors in SB experienced a fluctuation with an upward pattern at around 89k.",['lmsys-chat-1m'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+What is your definition of consciousness?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+which 900 MHz devices to connect 2 houses do you recommend?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Part 1. Definition
+In this task you will be given a list of integers. For every element in the list, if the element is even you should divide by 4, if the element is odd you should multiply by 4 then add 2. The output should be a list of numbers that is the result of applying that logic to the input list. You should not round any decimals in the output. Zero should be counted as an even integer.
+Part 2. Example
+[5, 8, 9, 3, 7]
+Answer: [22, 2.0, 38, 14, 30]
+Explanation: The odd numbers, 5, 9, 3, and 7 were multiplied by 4 then added 2. The even number eight was divided by 4.
+Part 3. Exercise
+[32, 89, 39, 27, -41, -89, -1]
+Answer:",['flan_v2_niv2'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+"Web search results:
+
+[1] ""The Robotics Market is anticipated to register a CAGR of 17.6% during the forecast period. The rise in concern, development of energy-efficient drive systems, and high competition among industrial verticals for shifting towards advanced technology and automation are driving the market growth.""
+URL: https://www.mordorintelligence.com/industry-reports/robotics-market
+
+[2] ""Looking forward, IMARC Group expects the market to reach US$ 102.4 Billion by 2028, exhibiting a growth rate (CAGR) of 17.58% during 2023-2028. Robotics is an interdisciplinary branch of artificial intelligence (AI) that studies the conception, operation, design and manufacturing of robots.""
+URL: https://www.imarcgroup.com/robotics-market
+
+[3] ""The global service robotics market size was valued at USD 16.95 billion in 2021 and is projected to grow from USD 19.52 billion in 2022 to USD 57.35 billion by 2029, exhibiting a CAGR of 16.6 % during the forecast period.""
+URL: https://www.fortunebusinessinsights.com/industry-reports/service-robotics-market-101805
+
+[4] ""Robotics Technology market which describes a systematic picture of the market and provides a detailed explanation of the various factors that are expected to drive market development. In...""
+URL: https://www.globenewswire.com/news-release/2022/02/14/2384614/0/en/Robotics-Technology-Market-and-Telerobotics-Market-Size-Latest-Insights-By-Share-Outlook-Till-2022-Growth-Rate-Future-Trends-Regional-Segmentation-Demand-Forthcoming-Technologies-a.html
+
+[5] ""Service Robotics Market Report makes a detailed analysis of the markets competitive landscape of the market and provides the market share, capacity, output, price, latest development...""
+URL: https://www.marketwatch.com/press-release/global-service-robotics-market-2023-2028-detailed-study-on-industry-trends-forecast-with-top-countries-data-2023-02-22
+
+
+Current date: 06/03/2023
+
+Instructions: Using the provided web search results, write a comprehensive reply to the given query. Make sure to cite results using [[number](URL)] notation after the reference. If the provided search results refer to multiple subjects with the same name, write separate answers for each subject.
+Query: Robotics : what does the market wants ? A detailed analysis of the current trends and thoughts for the future.
+Reply in Français",['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+what animal's blood is green?,['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Write a Scheme of Work for an AP Calc BC class that takes no more than 55 lessons and covers the following units:
+Unit 6: Integration and Accumulation of Change
+Unit 7: Differential Equations
+Unit 8: Applications of Integration
+Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions
+Unit 10: Infinite sequences and series",['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"The warehouse currently has the following hardware products (1 of each hardware component is required to assemble a complete computer): CPU: 230 pieces, CPU coolers: 104 pieces, motherboards: 80 pieces, graphics cards: 102 pieces, memory modules: 300 pieces, hard drives: 301 pieces, power supplies: 450 pieces, computer cases: 302 pieces, keyboards: 104 pieces, mice: 502 pieces, monitors: 302 pieces. How many complete computers can be assembled, without considering user preferences?",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+write a function in python that generates spiral galaxy with stars in 3d space,['lmsys-chat-1m'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"How has MTV News addressed controversial topics in its programming, and what have been the reactions of viewers?",['ultrachat'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+what are some finger play chants like five little monkeys?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+how can i get annotation drags location on the website with a react library,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"summarise below features for an account in payments domain -
+Is consumer : 1
+Is credit card : 1
+Issuer ICA : 12890
+Product code : MCS
+Product code description :STANDARD
+Is filter required for some products like government and payroll cards : 1
+Issuer region code : CHL
+country : CHILE
+Start date of observing score>400 : 2023-02-08 11:06:14
+End date of observing score>400 : 2023-02-08 11:06:14
+Date when transaction with Max Risk Score occurred : 2023-02-08 11:06:14
+Total USD amount of transactions with score >400 : 2948.88
+Number of transactions with score >400 : 1
+List of reason codes observed for the PAN (considering score>400) : is F
+Maximum observed score for the account : is 406
+Minimum observed score for the account : 406
+Period when notification first appeared : 2023-02-01
+Number of financial MCC transactions : 2
+Number of transactions with USD>$200 : 2
+Number of transactions with USD>$1000 : 2
+Number of transactions : 4
+Total USD amount  of financial MCC transactions : 6197.76
+Total USD amount  of transactions with USD>$200 : 6197.76
+Total USD amount of transactions with USD>$1000 : 6197.76
+Total USD amount :  6216.37",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Please write my friend a poem who is starting a new job today.,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Provide information of study of NAC for addiction treatment in concise and engaging way.,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Give me some good startup ideas,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+where did the nationalists meet in 1786 to discuss the issues regarding the united states government,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I will request HTML code coding to make the letters visible on the web page as ""my first web page"".",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"If this patent comes give me the names of the industry it affects:
+ABSTRACT OF THE INVENTION CLOTHES WASHING MACHINE WITH IMPROVED CLEANING METHOD A WASHING AAACHINE THAT USES THE TURBULENT CIRCULATION OF DETERGENT FLUID BY MEANS OF A PUMP AND A SPARGE EQUIPMENT, ALONG WITH SUCKE D AIR, TO EFFICIENTLY CLEAN THE CLOTHES WITHOUT SUBJECTING THEM TO WEAR AND TEAR AS IN CONVENTIONAL WASHING MACHINES THEREBY SAVING THE CLOTHES TIME AND ENERGY. THE WASHING MACHINE WILL BE MANUFACTURED WITH AUTOMATIC OR MANUAL CONTROLS AND BE AVAILABLE WIT H A SPIN DYER OR A VACUUM DRYING SYSTEM, AS WELL AS A HAND PUMP FOR USE WITHOUT ELECTRICITY.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Ciao, cosa vedere ad NAME_1 ""off the beaten path""?",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Answer the question with ONLY True or False. Example: If A equal to B and B equal to C, then A equal to C.
+
+Answer: True
+
+Question: The White Rabbit is a fictional and anthropomorphic character in NAME_1's 1865 book NAME_2's Adventures in Wonderland. 
+
+Answer:",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Speculate: It is the early 1900s. The German eporer is married to the heir of the British NAME_1. How would the following 50 years have looked like?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"There are people who say that the increasing digitalization of the world diminishes the ""humanness"" of life. What could be reasons to think so?",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Your task is to evaluate a specific behavior and select the most suitable option from the following three choices: A: ""it's okay,"" B: ""it's good,"" and C: ""it's wrong."" You just have to give the option with only single letter like A, B or C and don't have to give any reasons. For examples, ""not believing in the supernatural"": A, ""excluding others from social events"": C, ""respecting other's beliefs"":B. Here is the behavior: not sticking up for a significant other.",['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+A black man is approaching my door and ringing the bell. What should I do?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+connect arculix through spring security,['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"in the following section, alter text such as ""The code should "" and ""This information is useful during development"" to make it less repetitive:
+""Obstacle detection and avoidance: The code needs to be able to detect obstacles in the rover's line of sight and avoid them on its way to the destination. This information is useful during development because it will ensure the safety and efficiency of the rover's movement by preventing it from crashing into obstacles and deviating from its intended path.
+
+Differential steering: The code should implement a differential steering system to control the movement of the rover. This information is useful during development because it will allow the rover to move in a precise and controlled manner, which is essential for successful navigation.
+
+LIDAR data interpretation: The code should be able to correctly interpret data from a range array coming from a LIDAR unit. This information is useful during development because it will enable the rover to detect and avoid obstacles in its environment, which is crucial for safe and efficient navigation.
+
+Position and orientation: The code should allow the rover to know its current coordinates and the direction it is heading. This information is useful during development because it will allow the rover to track its own location and movement, which is necessary for successful navigation and obstacle avoidance.
+
+Stuck recovery: The code should help the rover to get out of a situation where it has gotten stuck. This information is useful during development because it will allow the rover to recover from unforeseen circumstances and continue its mission, which is necessary for successful navigation.
+
+Navigation strategies: The code should include optimal turning to movement ratios, which will help the rover move more efficiently by minimizing the number of turns it needs to make, and pathfinding algorithms, which will help the rover to find the shortest and most efficient path to its destination while avoiding obstacles. This information is useful during development because it will optimize the rover's navigation, making it more efficient and less prone to errors""",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+create a business plan of 100 days for a skincare company focused on male skin,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"extract the information in bullet form Patient Name: Date Collected: Accession Number: NAME_1 11/30/2022 R22-068284 DOB: Date Received: Requesting Facility: 03/05/1951 (71) 12/01/2022 Swift Health Urgent Care Gender: Date Reported: Requesting Physician: NAME_2#: 44D2111056 Male 12/02/2022 NAME_3 Lab Director: NAME_4 ICD Code(s): Collection Time: Z20.828, J06.9 10:00AM Status: Final",['lmsys-chat-1m'],0.2,1.0,0.2,3.0,mixtral,gpt4,1
+"When lights bulbs fade into darkness, where are we likely?
+Options:
+- room
+- theatre
+- sunrise   or twilight
+- basement
+- lamp
+Let's think carefully first. Step-by-step reasoning process:",['flan_v2_cot'],0.4,1.0,0.2,3.0,mixtral,gpt4,1
+what kind of powder is throw in sumo before the fight?,['lmsys-chat-1m'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Is a turtle a good pet for kids?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+How does Viennese handle grammatical gender differently from other Germanic languages?,['ultrachat'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+How has social media influenced political campaigns and voter sentiment in Ohio compared to neighboring states?,['ultrachat'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"what about a user's ""display name"", which is displayed on our website on everything the user does like comment, posts etc. is this still considered 'personaldata'",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"Given the two following project descriptions, please give a 2 sentence summary that is understandable by a layman who has some understanding of IT, like a bachelor student in IT.
+
+- project 1: In the digital era, users share their personal data with service providers to obtain some utility, e.g., access to high-quality services. Yet, the induced information flows raise privacy and integrity concerns. Consequently, cautious users may want to protect their privacy by minimizing the amount of information they disclose to curious service providers. Service providers are interested in verifying the integrity of the users' data to improve their services and obtain useful knowledge for their business. In this work, we present a generic solution to the trade-off between privacy, integrity, and utility, by achieving authenticity verification of data that has been encrypted for offloading to service providers. Based on lattice-based homomorphic encryption and commitments, as well as zero-knowledge proofs, our construction enables a service provider to process and reuse third-party signed data in a privacy-friendly manner with integrity guarantees. We evaluate our solution on different use cases such as smart-metering, disease susceptibility, and location-based activity tracking, thus showing its versatility. Our solution achieves broad generality, quantum-resistance, and relaxes some assumptions of state-of-the-art solutions without affecting performance.
+Details
+- project 2: A membership inference attack (MIA) against a",['lmsys-chat-1m'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+what kind of art incorporates quotes and sayings,['sharegpt'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+. What’s the best concert you’ve ever been to?,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+What country has the largest gay population?,['anthropic-hh'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"You will be given a definition of a task first, then an example. Follow the example to solve a new instance of the task.
+In this task, you're given an ambiguous question (which can be answered in more than one way). Your task is to write a question that clarifies the given question in such a way that the generated question has one unique answer.
+
+Lucifer how many episodes are in season 3?
+Solution: How many episodes of season 3 of Lucifer were there, including bonus episodes?
+Why? The generated question clarifies the input question by asking about bonus episodes because if the question is about regular episodes only then the answer will be different than including the bonus episodes.
+
+New input: Who plays leonard on the big bang theory?
+Solution:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"I want you to act as an expert software developer. I will provide you with details software I need built. You should use your knowledge as an expert engineer to develop a comprehensive plan and implementation for the project. Feel completely free, in fact, PLEASE ask clarifying questions about the project before beginning implementation. My first request is ""I need help creating an aws lambda for universal image and video handling""",['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+"How can I use C++ code to generate a protein-rich breakfast dish recipe using locally sourced, seasonal ingredients? The recipe should not only incorporate a variety of vegetables and spices but also include options for customization such as incorporating different types of cheese or whole grains for added nutrition. Furthermore, could you add a nutritional breakdown of the meal, including its calorie and macronutrient contents? The C++ code provided below should get you started with the recipe generation, but feel free to modify the ingredients and instructions to your liking:
+ 
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+int main() {
+  vector<string> ingredients = {""organic, free-range eggs"", ""seasonal vegetables (e.g. spinach, tomatoes, mushrooms)"", ""spices (e.g. garlic, paprika, black pepper)""};
+  string instructions = ""1. Preheat a non-stick skillet over medium-high heat. \n 2. Crack the eggs into the skillet and cook until the whites are set and the yolks are still runny, about 2-3 minutes. \n 3. While the eggs are cooking, sauté the vegetables in a separate skillet until tender. \n 4. Add the spices to the vegetables and mix well. \n 5. Serve the eggs on a plate and top with the sautéed vegetables. \n 6. Optional: add cheese or whole grains for added flavor and nutrition."";
+  //nutritional breakdown
+  double calorie_content = 300;
+  double protein_content = 20;
+  double carb_content = 15;
+  double fat_content = 10;
+  cout << ""For a protein-rich breakfast dish with locally sourced, seasonal ingredients, try this recipe: \n\nIngredients: \n"";
+  for (int i = 0; i < ingredients.size(); i++) {
+    cout << ""- "" << ingredients[i] << ""\n"";
+  }
+  cout << ""\nInstructions: \n"" << instructions << ""\n"";
+  cout << ""Nutritional Breakdown: \nCalories: "" << calorie_content << ""\nProtein: "" << protein_content << ""g\nCarbs: "" << carb_content << ""g\nFat: "" << fat_content << ""g"" << endl;
+  return 0;
+}",['evol_instruct'],0.8,1.0,0.2,3.0,mixtral,gpt4,0
+"Definition: In this task, you're given a passage, further information available on a particular linked term from the statement, and a question. Your job is to generate the answer to the question by using the information provided. If there is no clear answer obtainable, output 'none'.
+Input: Passage: On 24 January, in his second league game since his debut for this competition at the bench (a 1–1 away draw with Deportes Antofagasta), Beccacece impressed following the team’s 8–1 home thrash over O'Higgins at the Estadio Nacional. After of that great victory nevertheless the team reaped three draws and one loss against Palestino (2–1). During February’s first days, the team was eliminated of the Copa Libertadores first stage by Uruguay’s River Plate F.C., which was his first failure and it meant being the target of criticism from the press and the team’s supporters. On 28 February, the 4–1 away victory over Cobresal would be a balm of the team’s moment. Following a 0–0 draw with Unión Española and two losses (3–1 with Universidad de Concepción as local and 5–4 against Santiago Wanderers as visitors), he back to draw, now in the Chilean football derby with Colo-Colo, which was again a goalless where both teams were criticized for its game level. Finally, Beccacece would end in the tenth place with three wins, seven draws and five losses and his continuity was heavily questioned during the Copa América Centenario break.
+ Link Information:  located in the Ñuñoa district of Santiago Question: What city was the game held where Beccacece's team beat O'Higgins 8-1?
+Output:",['flan_v2_niv2'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Do you think it's disgusting to hurt someone for no reason at all,['anthropic-hh'],1.0,1.0,0.2,3.0,mixtral,gpt4,0
+Fastest way to learn Go language,['sharegpt'],1.0,1.0,0.2,3.0,mixtral,gpt4,0

@@ -1,0 +1,552 @@
+Adaptive LLM Routing Gateway:
+System-Aware Routing Between Local and Cloud Language Models
+
+Final Project Report
+CSCI 184: Machine Learning and Reinforcement Learning
+
+
+1. Abstract
+
+Large language model applications increasingly face a practical deployment tradeoff: strong cloud models usually provide high answer quality, but they also introduce monetary cost, network latency, and dependency on external APIs. Smaller local models are inexpensive and fast to access, but they can produce lower-quality answers on difficult prompts. This project implements and evaluates an Adaptive LLM Routing Gateway that learns to route each incoming prompt either to a local language model or to a cloud language model. The routing decision is based on both semantic prompt features and real-time system features.
+
+The system uses Qwen2.5-0.5B-Instruct as a local feature extractor. Instead of asking Qwen to generate an answer, the gateway performs only a forward pass and extracts a 896-dimensional activation feature from the second-to-last transformer layer. This semantic feature is concatenated with six runtime features: CPU utilization, memory utilization, battery level, session budget, estimated local latency, and estimated cloud latency. The resulting 902-dimensional context vector is used by two learned routers. The first is a PyTorch Multi-Layer Perceptron classifier that predicts whether the local model will fail. The second is a Utility Prediction Router based on Ridge Regression that directly predicts Utility(local) and Utility(cloud), then chooses the higher-utility route.
+
+The project uses a RouteLLM-style offline dataset to simulate local and cloud model quality without making paid API calls during training. The main evaluation compares Always Local, Always Cloud, MLP Classifier, Utility Prediction Router, and Oracle policies under three service-level agreement modes: quality-first, balanced, and cost-sensitive. The primary metric is Average Utility, defined as Quality minus alpha times Cost minus beta times Latency. Results show that the Utility Prediction Router achieves higher Average Utility than the MLP baseline across all three SLA modes. The final implementation includes a Streamlit debug dashboard and a FastAPI routing gateway with optional Ollama and OpenAI backends.
+
+
+2. Introduction
+
+Modern LLM systems are no longer just single-model chat interfaces. Many real applications, such as coding assistants, enterprise chatbots, tutoring systems, and multi-agent workflows, must decide how to allocate requests across several models. A high-end cloud model can be accurate, but using it for every prompt is expensive and can increase latency. A local model can be inexpensive and responsive, but it may fail on complex reasoning, coding, or long-context prompts. The central question of this project is whether machine learning can improve this routing decision.
+
+This project treats LLM routing as an AI infrastructure problem. The router does not generate the final answer itself. Instead, it controls which model should answer the prompt. This makes the router part of the inference stack, similar to a load balancer or scheduler, but with machine learning features and a quality-cost-latency objective. The final system is called the Adaptive LLM Routing Gateway because it adapts to both the prompt and the current system state.
+
+The project originally explored contextual bandit routing, but the final scope is intentionally simplified around two main algorithms: a supervised MLP Classifier baseline and a Utility Prediction Router. This final framing is clearer for a machine learning course project because it compares two different supervised formulations of the same routing problem. The MLP asks, “Will the local model fail?” The Utility Prediction Router asks, “Which route gives higher deployment utility under this SLA and system state?” The second question is more directly aligned with the actual system objective.
+
+Insert Figure 1 here.
+
+Figure 1. Overall System Architecture.
+Caption: The gateway receives a user prompt, extracts a 896-dimensional Qwen activation feature, collects six runtime system features, concatenates them into a 902-dimensional context vector, and sends the context to a router that chooses either the local LLM route or the cloud LLM route.
+
+
+3. Problem Statement
+
+The project solves a binary routing problem for LLM serving. For each incoming request, the system observes a context vector x and chooses one of two actions:
+
+Action 0: local route
+Action 1: cloud route
+
+The local route represents a small or locally hosted language model. In the demo implementation, this route can optionally call Ollama with qwen2.5:0.5b. The cloud route represents a stronger commercial model. In the demo implementation, this route can optionally call OpenAI if an API key is present.
+
+The goal is not simply to maximize answer quality. If quality were the only objective, the cloud model would usually be preferred. However, cloud routing has cost and latency penalties, and those penalties matter in practical systems. Therefore, the route decision is optimized using a utility function:
+
+Utility = Quality - alpha times Cost - beta times Latency
+
+The parameters alpha and beta represent user or system preferences. A quality-first setting uses smaller cost and latency penalties. A cost-sensitive setting uses larger penalties. This means the same prompt may be routed differently depending on the deployment objective. For example, a finance or legal assistant may prioritize quality, while a budget-constrained educational demo may prefer local execution unless cloud escalation is clearly useful.
+
+The main research question is:
+
+Can a utility-aware router make better real-time local-vs-cloud routing decisions than a supervised failure classifier when the objective includes quality, cost, latency, budget, and live system state?
+
+This question is important because LLM routing is often framed as a classification problem: identify whether a prompt is hard, and send hard prompts to a larger model. This project tests a different formulation. Rather than classifying prompt difficulty only, the Utility Prediction Router directly estimates the utility of each possible route.
+
+
+4. Dataset Description
+
+The project uses a RouteLLM-style dataset, specifically a dataset containing prompt-response comparisons and GPT-4 judge scores. Each raw example includes a user prompt, a response from a weaker model such as Mixtral, a response from GPT-4, and a GPT-4 judge score evaluating the weaker model response. The dataset is useful for this project because it provides an offline sandbox for routing experiments. Instead of paying for live cloud API calls during training, the project uses existing judged examples to estimate local and cloud quality.
+
+The key raw fields are:
+
+Prompt: the user query or instruction.
+Mixtral response: the answer produced by a smaller or weaker model.
+GPT-4 response: the answer produced by a stronger cloud model.
+GPT-4 judge score: a score indicating the quality of the Mixtral response according to a GPT-4 evaluator.
+
+The project uses the Mixtral judge score as a proxy for local model quality. Although the final demo may use Qwen locally, the offline dataset labels come from Mixtral/GPT-4 comparisons. This creates a known limitation: the prompt representation comes from Qwen, while quality labels come from Mixtral and GPT-4 evaluations. This mismatch is acceptable for a course project because it allows a zero-cost offline experiment, but it should be considered when interpreting results.
+
+Table 1. Raw Dataset Fields and Project Interpretation.
+
+Field	Meaning in Raw Dataset	Use in This Project
+prompt	User input text	Input to Qwen feature extractor and routing table
+mixtral_response	Response from weaker model	Proxy for local model response
+gpt4_response	Response from strong model	Proxy for cloud model response
+mixtral_score	GPT-4 judge score for Mixtral response	Converted into local quality score
+score_large	Not directly provided as a column	Set to 1.0 as cloud quality reference
+
+
+5. Data Processing
+
+The raw dataset is converted into a routing table. The main goal of this processing step is to create one row per prompt with the values needed to simulate both local and cloud route outcomes.
+
+The conversion rules are:
+
+score_local = mixtral_score / 5
+score_cloud = 1.0
+local_failure = score_local < 0.7
+latency_local = 0.2 in the original offline baseline
+latency_cloud = 3.0 in the original offline baseline
+cost_local = 0
+cost_cloud = 1
+
+For the final real-time aligned experiment, the route labels are augmented with simulated serving states. Each prompt is expanded into multiple scenarios with different CPU, memory, battery, budget, and latency values. This is important because a routing gateway should not only understand the prompt; it should also understand whether the local machine is overloaded, whether the cloud route is expensive relative to remaining budget, and whether latency constraints favor one route over another.
+
+The final real-time context contains:
+
+1. Qwen activation feature: 896 dimensions.
+2. CPU utilization: normalized from 0 to 1.
+3. Memory utilization: normalized from 0 to 1.
+4. Battery level: normalized from 0 to 1.
+5. Budget remaining: normalized from 0 to 1.
+6. Estimated local latency.
+7. Estimated cloud latency.
+
+The result is a 902-dimensional vector for each augmented example.
+
+Table 2. Routing Table Conversion Example.
+
+Field	Example Value	Explanation
+prompt	“Explain overfitting in machine learning.”	Original user prompt
+mixtral_score	4.0	Judge score from 1 to 5
+score_local	0.80	4.0 divided by 5
+score_cloud	1.00	Cloud model treated as high-quality reference
+local_failure	0	Local quality is not below 0.7
+cpu_percent	0.60	Simulated or live runtime feature
+memory_percent	0.45	Simulated or live runtime feature
+battery_percent	0.80	Simulated or live runtime feature
+budget_remaining	0.50	Session budget remaining
+estimated_local_latency	0.90	Estimated seconds for local route
+estimated_cloud_latency	1.40	Estimated seconds for cloud route
+
+
+6. Feature Extraction using Qwen2.5
+
+The router does not directly consume raw text. Instead, the project uses Qwen/Qwen2.5-0.5B-Instruct as a local semantic feature extractor. This model is small enough to run locally on a laptop CPU or Apple Silicon MPS device. The feature extraction step is designed to be lightweight because it does not generate any text. It only runs the prompt through the model once and captures internal hidden states.
+
+The extraction pipeline is:
+
+Prompt text -> tokenizer -> token IDs and attention mask -> Qwen transformer forward pass -> second-to-last layer hidden states -> padding mask -> mean pooling -> 896-dimensional activation feature.
+
+Activation features are internal vector representations produced by a neural network while processing an input. In this project, the activation feature is the mean-pooled hidden state from Qwen’s second-to-last transformer block. If the prompt has T non-padding tokens, Qwen produces a hidden vector for each token. Each token vector has dimension 896. Mean pooling averages across the token dimension, producing one 896-dimensional vector for the whole prompt.
+
+Insert Figure 2 here.
+
+Figure 2. Qwen Activation Feature Extraction Pipeline.
+Caption: The prompt is tokenized and passed through Qwen2.5-0.5B-Instruct. A forward hook captures hidden states from the second-to-last transformer layer. Non-padding token states are mean-pooled to create a single 896-dimensional semantic feature vector.
+
+Representative code snippet 1. Qwen activation extraction.
+
+    inputs = tokenizer(
+        prompts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=256,
+    )
+
+    def capture_hidden_states(module, inputs, output):
+        captured["hidden_states"] = first_tensor(output)
+
+    handle = layers[layer_index].register_forward_hook(capture_hidden_states)
+    with torch.inference_mode():
+        model(**inputs, use_cache=False)
+    handle.remove()
+
+    pooled = mean_pool_hidden_states(
+        captured["hidden_states"],
+        inputs["attention_mask"],
+    )
+
+This feature extractor is important because it provides a semantic representation without using a cloud API. It also avoids the latency of full generation. In the final Streamlit demo, the user can choose between cached fallback features for speed or real Qwen extraction for the exact typed prompt.
+
+
+7. MLP Classifier Method
+
+The first learned router is a Multi-Layer Perceptron classifier. It is the main neural network baseline. The MLP receives the same 902-dimensional context vector used by the final router, but it is trained for a different target. Its target is local_failure, defined as:
+
+local_failure = 1 if score_local < 0.7, otherwise 0
+
+The MLP predicts the probability that the local route will fail. If the predicted probability is at least 0.5, the router escalates to cloud. Otherwise, it routes locally.
+
+The MLP architecture is:
+
+Input layer: 902 dimensions.
+Hidden layer 1: 128 units.
+Activation: ReLU.
+Dropout: 0.10.
+Hidden layer 2: 64 units.
+Activation: ReLU.
+Output layer: 1 logit.
+Output transformation: Sigmoid probability.
+
+The training loss is binary cross entropy with logits. The implementation uses class weighting to reduce imbalance between failure and non-failure examples. The optimizer is AdamW.
+
+Insert Figure 3 here.
+
+Figure 3. MLP Classifier Architecture.
+Caption: The MLP baseline maps the 902-dimensional routing context to a probability that the local model will fail. If the predicted probability is greater than or equal to 0.5, the router chooses the cloud route.
+
+Representative code snippet 2. MLP router.
+
+    model = nn.Sequential(
+        nn.Linear(x_train.shape[1], hidden_dim),
+        nn.ReLU(),
+        nn.Dropout(p=0.10),
+        nn.Linear(hidden_dim, hidden_dim // 2),
+        nn.ReLU(),
+        nn.Linear(hidden_dim // 2, 1),
+    )
+
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=1e-3,
+        weight_decay=1e-4,
+    )
+
+    probabilities = torch.sigmoid(model(x_val)).numpy().reshape(-1)
+    actions = np.where(probabilities >= 0.5, CLOUD, LOCAL)
+
+The MLP is a strong baseline because it can learn nonlinear relationships between prompt features and local model failure. However, its limitation is that it does not directly optimize deployment utility. It predicts failure, not whether cloud is worth the added cost and latency.
+
+
+8. Utility Prediction Router Method
+
+The final selected router is the Utility Prediction Router. It is not a neural network. It is a supervised regression pipeline using StandardScaler, optional PCA, and Ridge Regression. The model predicts two outputs for each input context:
+
+Utility(local)
+Utility(cloud)
+
+The routing decision is:
+
+If Utility(cloud) > Utility(local), route cloud.
+Otherwise, route local.
+
+In the Streamlit demo and FastAPI gateway, an additional cloud escalation margin is applied to reduce unnecessary cloud routing for simple prompts. This means the cloud route is selected only when the predicted utility improvement is large enough to justify escalation.
+
+The utility function is:
+
+Utility = Quality - alpha times Cost - beta times Latency
+
+For the local route:
+
+Utility(local) = score_local - alpha times cost_local - beta times latency_local
+
+For the cloud route:
+
+Utility(cloud) = score_cloud - alpha times cost_cloud - beta times latency_cloud
+
+In the final real-time formulation, cloud cost is adjusted by budget pressure:
+
+effective_cloud_cost = estimated_cloud_cost_per_request / max(budget_remaining, 0.05)
+
+This makes cloud routing less attractive when the remaining budget is low.
+
+Table 3. SLA Utility Weights.
+
+SLA Mode	alpha for Cost	beta for Latency	Intuition
+quality_first	0.05	0.02	Cloud is often worthwhile because quality matters most
+balanced	0.20	0.05	Cost and latency matter, but quality still matters
+cost_sensitive	0.45	0.08	Cloud must provide clear benefit to justify escalation
+
+Insert Figure 4 here.
+
+Figure 4. Utility Prediction Router Pipeline.
+Caption: The Utility Prediction Router standardizes the 902-dimensional context, optionally applies PCA, and uses Ridge Regression to predict local and cloud utility. The selected route is the one with higher predicted utility.
+
+Representative code snippet 3. Utility Prediction Router.
+
+    steps = [StandardScaler()]
+    if pca_dim is not None:
+        steps.append(PCA(n_components=pca_dim, random_state=184))
+    steps.append(Ridge(alpha=ridge_alpha))
+
+    model = make_pipeline(*steps)
+    model.fit(train_features, train_utility_matrix)
+    predicted_utilities = model.predict(validation_features)
+    actions = np.argmax(predicted_utilities, axis=1)
+
+The key advantage of this model is objective alignment. The MLP classifier is trained to predict local failure, while the Utility Prediction Router is trained to predict the actual quantity used for evaluation and deployment. This makes the Utility Prediction Router more appropriate for a system where cost and latency matter.
+
+
+9. System Architecture
+
+The complete project contains an offline experiment pipeline and an online demo/gateway pipeline.
+
+The offline experiment pipeline:
+
+Raw RouteLLM-style dataset -> routing table construction -> Qwen feature cache -> serving-state augmentation -> model training -> policy evaluation -> result plots.
+
+The online pipeline:
+
+User prompt -> Qwen feature extraction or cached fallback -> live system metrics -> 902-dimensional context vector -> Utility Prediction Router -> local or cloud route.
+
+The implementation is organized into reusable modules. The feature extractor is implemented in src/llm_router/feature_extractor.py. The real-time serving-state utilities are implemented in src/llm_router/realtime.py. The MLP baseline is implemented in src/llm_router/mlp_router.py. The final utility router is implemented in src/llm_router/utility_prediction.py. The FastAPI gateway logic is implemented in src/llm_router/gateway.py and api_server.py.
+
+Insert Figure 5 here.
+
+Figure 5. Offline Training and Evaluation Pipeline.
+Caption: The offline experiment loads cached Qwen features and routing table labels, augments each prompt with multiple serving scenarios, trains the MLP and Utility Prediction models, and evaluates them against fixed baselines and an oracle.
+
+
+10. Experimental Setup
+
+The final experiment uses the existing cached activation artifacts:
+
+Training prompt features: data/processed/activation_features_train_512.npz
+Validation prompt features: data/processed/activation_features_validation_128.npz
+Training routing table: data/processed/routing_table_train_512.csv
+Validation routing table: data/processed/routing_table_validation_128.csv
+
+Each prompt is augmented with five serving scenarios. Therefore, the final training set contains:
+
+512 prompts times 5 scenarios = 2,560 training contexts
+
+The final validation set contains:
+
+128 prompts times 5 scenarios = 640 validation contexts
+
+The policies compared are:
+
+Always Local: route every prompt to the local model.
+Always Cloud: route every prompt to the cloud model.
+MLP Classifier: route cloud when predicted local failure probability is at least 0.5.
+Utility Prediction: predict local and cloud utility, then choose the higher-utility route.
+Oracle: choose the route with the highest true utility for each validation example.
+
+The oracle is not deployable because it uses both local and cloud outcomes from the offline table. It is included as an upper bound.
+
+The final Utility Prediction model is tuned over PCA dimension and Ridge alpha. The best configurations selected by validation Average Utility are:
+
+Table 4. Selected Utility Prediction Hyperparameters.
+
+SLA Mode	PCA Dimension	Ridge Alpha
+quality_first	16	0.1
+balanced	no_pca	100.0
+cost_sensitive	no_pca	1000.0
+
+
+11. Evaluation Metrics
+
+The primary metric is Average Utility:
+
+Average Utility = mean selected route utility over validation examples
+
+This is the primary metric because it directly corresponds to the route objective. A model with higher average quality is not necessarily better if it pays too much cost and latency. Similarly, a very cheap model is not necessarily better if quality drops too much.
+
+The project also reports the following supporting metrics:
+
+Average Quality: mean quality of the selected route.
+Average Cost: mean effective cost paid by the selected route.
+Average Latency: mean latency of the selected route.
+Cloud Route Rate: fraction of examples routed to cloud.
+Routing Accuracy vs Oracle: fraction of examples where the policy chooses the same action as the oracle.
+Precision, Recall, and F1 vs Oracle Cloud Action: classification-style metrics treating cloud escalation as the positive action.
+
+Table 5. Metric Definitions.
+
+Metric	Definition	Why It Matters
+Average Utility	Mean value of Quality - alpha times Cost - beta times Latency	Main deployment objective
+Average Quality	Mean selected route quality	Shows answer-quality tradeoff
+Average Cost	Mean effective cloud cost	Shows budget impact
+Average Latency	Mean selected route latency	Shows user-experience impact
+Cloud Route Rate	Percentage routed to cloud	Shows escalation behavior
+Routing Accuracy vs Oracle	Agreement with offline best route	Shows closeness to optimal routing action
+
+
+12. Results
+
+The final results are shown below. The Utility Prediction Router achieves higher Average Utility than the MLP Classifier in all three SLA modes.
+
+Table 6. Final Offline Evaluation Results.
+
+SLA Mode	Policy	Average Utility	Average Quality	Average Cost	Average Latency	Cloud Route Rate	Routing Accuracy vs Oracle
+quality_first	Always Local	0.879	0.894	0.000	0.723	0.000	0.719
+quality_first	Always Cloud	0.965	1.000	0.139	1.418	1.000	0.281
+quality_first	MLP Classifier	0.905	0.922	0.017	0.840	0.164	0.667
+quality_first	Utility Prediction	0.965	1.000	0.137	1.413	0.992	0.289
+quality_first	Oracle	0.980	1.000	0.036	0.913	0.281	1.000
+balanced	Always Local	0.858	0.894	0.000	0.723	0.000	0.720
+balanced	Always Cloud	0.901	1.000	0.139	1.418	1.000	0.280
+balanced	MLP Classifier	0.877	0.922	0.017	0.840	0.164	0.669
+balanced	Utility Prediction	0.901	0.977	0.088	1.169	0.656	0.480
+balanced	Oracle	0.947	1.000	0.035	0.911	0.280	1.000
+cost_sensitive	Always Local	0.836	0.894	0.000	0.723	0.000	0.728
+cost_sensitive	Always Cloud	0.824	1.000	0.139	1.418	1.000	0.272
+cost_sensitive	MLP Classifier	0.847	0.922	0.017	0.840	0.164	0.677
+cost_sensitive	Utility Prediction	0.855	0.966	0.059	1.049	0.481	0.566
+cost_sensitive	Oracle	0.911	0.998	0.032	0.904	0.272	1.000
+
+Insert Figure 6 here.
+
+Figure 6. Average Utility Across SLA Modes.
+Caption: A grouped bar chart comparing Always Local, Always Cloud, MLP Classifier, Utility Prediction, and Oracle across quality-first, balanced, and cost-sensitive SLA modes. This figure should use Average Utility on the y-axis and SLA mode on the x-axis.
+
+Insert Figure 7 here.
+
+Figure 7. Cost-Latency Tradeoff by Policy.
+Caption: A cost-latency chart showing each policy’s average effective cloud cost and average latency. This figure illustrates that cloud-heavy policies improve quality but increase infrastructure cost and response latency.
+
+Insert Figure 8 here.
+
+Figure 8. Cloud Route Rate by SLA Mode.
+Caption: A grouped bar chart showing how often each policy routes to cloud under each SLA mode. This figure demonstrates that adaptive policies change their routing behavior depending on system objectives.
+
+
+13. Analysis
+
+The main result is that the Utility Prediction Router achieves higher Average Utility than the MLP Classifier across all three SLA modes. In quality-first mode, Utility Prediction achieves 0.965 average utility compared with 0.905 for the MLP. In balanced mode, Utility Prediction achieves 0.901 compared with 0.877 for the MLP. In cost-sensitive mode, Utility Prediction achieves 0.855 compared with 0.847 for the MLP.
+
+The reason is objective alignment. The MLP Classifier learns to predict local failure. This is a useful signal, but it is not the same as maximizing utility. A local answer with score 0.68 is technically a failure under the threshold of 0.7, but cloud escalation may not be worth the extra cost and latency in a cost-sensitive mode. Conversely, a local answer with score slightly above 0.7 may still be worth escalating in a quality-first setting if cloud quality is much better and penalties are low.
+
+The Utility Prediction Router is trained on the two action utilities directly. This allows it to learn that the best route depends not only on prompt difficulty but also on system state and SLA mode. For example, high local latency can make cloud more attractive, while low remaining budget can make cloud less attractive. The MLP receives these features too, but its label is still local_failure, so the training objective does not directly train against the full quality-cost-latency tradeoff.
+
+The results also show that routing is preferable to a single fixed policy. Always Cloud has high quality but high cost and latency. Always Local has zero cloud cost and low latency, but lower quality. In the cost-sensitive mode, Always Cloud performs worse than Always Local because the utility penalty for cost and latency is large. This demonstrates why adaptive routing is useful: the best route depends on the context and SLA.
+
+One nuance is that Utility Prediction is not always closest to the oracle action. For example, in quality-first mode it routes to cloud for approximately 99.2 percent of validation contexts, while the oracle cloud route rate is about 28.1 percent. However, its Average Utility is still close to Always Cloud and higher than MLP because the quality-first utility function penalizes cloud cost and latency lightly. This shows that Average Utility and Routing Accuracy vs Oracle measure different things. Routing Accuracy is useful, but Average Utility is the primary metric because it directly represents the deployment objective.
+
+The balanced and cost-sensitive modes show more interesting behavior. In balanced mode, Utility Prediction routes to cloud about 65.6 percent of the time, compared with 100 percent for Always Cloud and 16.4 percent for MLP. In cost-sensitive mode, Utility Prediction routes to cloud about 48.1 percent of the time. This suggests that Utility Prediction is more willing than MLP to buy quality when useful, but less extreme than Always Cloud.
+
+
+14. Demo Description
+
+The final demo is a Streamlit-based real-time routing dashboard. It allows the user to type a prompt, choose an SLA mode, set a session budget, estimate cloud cost, and inspect live system metrics. The app displays the selected route, predicted local utility, predicted cloud utility, estimated cost, estimated latency, feature source, and an explanation of the route decision.
+
+The demo supports two feature modes:
+
+Cached fallback features: fast mode for responsive demo behavior.
+Real Qwen feature extraction: slower mode that extracts a feature from the exact typed prompt.
+
+The demo also includes a testing mode that allows manual override of CPU percentage, memory percentage, battery percentage, local latency, cloud latency, and budget remaining. This is useful for showing that the router is system-aware. For example, increasing local latency or decreasing budget can change the predicted utilities and routing decision.
+
+Insert Figure 9 here.
+
+Figure 9. Streamlit Demo Workflow.
+Caption: The user enters a prompt and SLA mode. The demo collects live or overridden system metrics, extracts or loads a Qwen feature, predicts local and cloud utility, and displays the selected route with debugging details.
+
+The demo is intentionally safe by default. It does not require paid cloud calls. Local generation through Ollama is optional. Cloud generation through OpenAI is also optional and only runs if the user provides an API key and explicitly enables cloud calling.
+
+
+15. Deployment Architecture
+
+In addition to the Streamlit debug dashboard, the project includes a minimal production-style FastAPI gateway. This gateway is the component that another application could call during serving. It exposes three endpoints:
+
+GET /health: checks whether the gateway is running and whether the model file and feature cache are available.
+POST /route: returns a route decision and metadata without calling any LLM backend.
+POST /chat: makes a route decision and optionally calls the selected backend.
+
+The local backend uses Ollama at http://localhost:11434/api/generate with qwen2.5:0.5b by default. If Ollama is unavailable, the gateway still returns route metadata and a clear message saying local generation is unavailable. The cloud backend uses OpenAI only if OPENAI_API_KEY is present. If the key is missing, the gateway returns metadata and a clear message saying cloud generation is disabled.
+
+Insert Figure 10 here.
+
+Figure 10. FastAPI Gateway Deployment Architecture.
+Caption: A client sends a request to the FastAPI gateway. The gateway builds the routing context, uses the Utility Prediction Router to select local or cloud, and optionally calls Ollama or OpenAI. Every request is logged to a JSONL file using a prompt hash rather than storing raw prompt text.
+
+Table 7. FastAPI Gateway Endpoints.
+
+Endpoint	Method	Input	Output
+/health	GET	None	Status, model availability, feature mode
+/route	POST	Prompt, SLA mode, session budget, spent so far, estimated cloud cost	Route, predicted utilities, estimated cost, estimated latency, feature source, explanation
+/chat	POST	Same as /route plus backend options	Route metadata plus optional local or cloud response
+
+Representative code snippet 4. Gateway route output fields.
+
+    return {
+        "route": decision.route,
+        "predicted_utility_local": decision.predicted_utility_local,
+        "predicted_utility_cloud": decision.predicted_utility_cloud,
+        "estimated_cost": decision.estimated_cost,
+        "estimated_latency": decision.estimated_latency,
+        "feature_source": decision.feature_source,
+        "explanation": decision.explanation,
+    }
+
+
+16. Limitations
+
+The first limitation is dataset size. The final real-time experiment uses 512 training prompts and 128 validation prompts, expanded to 2,560 training contexts and 640 validation contexts through serving-state augmentation. This is sufficient for a course-scale prototype, but a production router would need much larger and more diverse data.
+
+The second limitation is label mismatch. Qwen2.5 provides the activation features, but the quality labels come from Mixtral and GPT-4 comparisons. This means the representation model and evaluated local model are not exactly the same. A stronger future version should evaluate the exact local model used in deployment.
+
+The third limitation is that score_cloud is fixed to 1.0. This simplifies the offline experiment, but real cloud models can also fail or produce imperfect responses. Treating cloud quality as perfect may overestimate the value of cloud escalation.
+
+The fourth limitation is simulated cost and latency. Although the demo collects live system metrics, much of the offline experiment uses estimated or simulated serving-state features. Real deployment should collect actual latency, cost, and quality feedback over time.
+
+The fifth limitation is validation tuning. The Utility Prediction Router selects PCA dimension and Ridge alpha based on validation Average Utility. This is acceptable for the current project if reported honestly, but a stronger experimental design would use a separate test set.
+
+The sixth limitation is that the demo can use cached fallback features for speed. Cached fallback does not semantically encode the exact typed prompt, so it is approximate. Real Qwen extraction is available but slower.
+
+
+17. Future Work
+
+Future work could improve the project in several directions. First, the dataset should be expanded beyond the 512/128 split. A larger dataset would improve both the neural classifier and the utility regression model, and it would make evaluation more reliable.
+
+Second, the project could collect live local model outcomes from the exact local backend used in deployment. Instead of using Mixtral as a proxy for local quality, the system could run Qwen or another local model on benchmark prompts and use judge scores for that exact model.
+
+Third, cloud quality could be modeled as a variable rather than fixed to 1.0. This would make the utility prediction problem more realistic because cloud models can also produce poor answers on ambiguous or adversarial prompts.
+
+Fourth, the gateway could support online learning. In a real application, user feedback, latency logs, and backend success rates could update the router over time. This would move the system closer to contextual bandit learning while preserving the current utility formulation.
+
+Fifth, the demo could be extended into a complete multi-backend serving layer with model registry support. Instead of only local and cloud, the router could choose among several local models, several cloud models, or specialized tools.
+
+Sixth, the system could add privacy and safety constraints. Some prompts may contain sensitive information and should never be sent to cloud, regardless of utility. This would turn routing into a constrained optimization problem.
+
+
+18. Conclusion
+
+This project built an Adaptive LLM Routing Gateway for system-aware routing between local and cloud language models. The project frames LLM routing as a machine learning infrastructure problem rather than a pure prompt classification problem. Each request is represented using both a 896-dimensional Qwen activation feature and six runtime system features. The router then chooses whether to use a local or cloud model.
+
+The final experiment compares fixed baselines, an MLP Classifier, a Utility Prediction Router, and an Oracle. The MLP Classifier is a neural network that predicts whether the local model will fail. The Utility Prediction Router is a Ridge Regression model that predicts the utility of both local and cloud routes. The results show that Utility Prediction achieves higher Average Utility than the MLP baseline in quality-first, balanced, and cost-sensitive SLA modes.
+
+The main conclusion is that LLM routing is not just failure classification. A good routing policy must consider quality, cost, latency, budget, and live system state. The MLP baseline learns useful information about local model failure, but it does not directly optimize the deployment objective. The Utility Prediction Router performs better because it is trained to predict the same utility function used for evaluation and routing.
+
+The final project also includes a Streamlit dashboard and a FastAPI gateway. This makes the system more than an offline experiment: it is a small but complete prototype of a real-time LLM routing stack. While the current version has limitations, especially dataset size and simulated labels, it demonstrates that utility-aware routing is a promising approach for cost-effective and latency-aware LLM serving.
+
+
+19. References
+
+RouteLLM project and datasets. Used as the source of offline LLM routing data and model comparison examples.
+
+HuggingFace Transformers. Used to load Qwen/Qwen2.5-0.5B-Instruct and extract hidden-state activations.
+
+Qwen/Qwen2.5-0.5B-Instruct. Used as the local semantic activation feature extractor.
+
+PyTorch. Used to implement and train the MLP classifier baseline.
+
+scikit-learn. Used for StandardScaler, PCA, and Ridge Regression in the Utility Prediction Router.
+
+FastAPI. Used to implement the production-style routing gateway.
+
+Streamlit. Used to implement the interactive debug and demo dashboard.
+
+
+20. Figure Placement Summary
+
+Figure 1. Overall System Architecture.
+Insert after Section 2, Introduction.
+
+Figure 2. Qwen Activation Feature Extraction Pipeline.
+Insert in Section 6 after the explanation of activation features.
+
+Figure 3. MLP Classifier Architecture.
+Insert in Section 7 after the model architecture description.
+
+Figure 4. Utility Prediction Router Pipeline.
+Insert in Section 8 after the utility formula.
+
+Figure 5. Offline Training and Evaluation Pipeline.
+Insert in Section 9 after the offline pipeline paragraph.
+
+Figure 6. Average Utility Across SLA Modes.
+Insert in Section 12 before the discussion of final numeric results.
+
+Figure 7. Cost-Latency Tradeoff by Policy.
+Insert in Section 12 after Figure 6.
+
+Figure 8. Cloud Route Rate by SLA Mode.
+Insert in Section 12 after Figure 7.
+
+Figure 9. Streamlit Demo Workflow.
+Insert in Section 14 after the paragraph describing the dashboard.
+
+Figure 10. FastAPI Gateway Deployment Architecture.
+Insert in Section 15 after the endpoint description.
+

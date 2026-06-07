@@ -1,0 +1,13 @@
+sla_mode,margin_bucket,margin_threshold,num_examples,routing_accuracy_vs_oracle
+quality_first,all,all,640,0.2890625
+quality_first,>0.01,0.01,619,0.2988691437802908
+quality_first,>0.02,0.02,415,0.44096385542168676
+quality_first,>0.05,0.05,186,0.967741935483871
+balanced,all,all,640,0.4796875
+balanced,>0.01,0.01,639,0.48043818466353677
+balanced,>0.02,0.02,636,0.4827044025157233
+balanced,>0.05,0.05,500,0.526
+cost_sensitive,all,all,640,0.565625
+cost_sensitive,>0.01,0.01,635,0.5653543307086614
+cost_sensitive,>0.02,0.02,635,0.5653543307086614
+cost_sensitive,>0.05,0.05,614,0.5700325732899023

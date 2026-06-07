@@ -1,0 +1,12 @@
+{
+  "dataset_name": "routellm/gpt4_dataset",
+  "split": "train",
+  "num_rows": 512,
+  "small_model": "mixtral",
+  "large_model": "gpt4",
+  "small_failure_threshold": 0.7,
+  "latency_small": 0.2,
+  "latency_large": 3.0,
+  "seed": 184,
+  "shuffled": true
+}

@@ -1,0 +1,14 @@
+{
+  "input": "data/processed/routing_table_train_512.csv",
+  "output": "data/processed/activation_features_train_512.npz",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "device": "cpu",
+  "max_length": 256,
+  "layer_index": 22,
+  "feature_dim": 896,
+  "num_rows": 512,
+  "batch_size": 8,
+  "elapsed_s": 273.6938242090109,
+  "avg_batch_latency_ms": 4051.0512167502384,
+  "avg_tokens_per_batch": 784.640625
+}

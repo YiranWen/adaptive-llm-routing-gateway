@@ -1,0 +1,14 @@
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  max_length: 512
+  device: auto
+
+sla:
+  accuracy: 1.0
+  cost: 0.3
+  latency: 0.2
+
+training:
+  log_every: 100
+  random_seed: 184
+

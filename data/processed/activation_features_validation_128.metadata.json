@@ -1,0 +1,14 @@
+{
+  "input": "data/processed/routing_table_validation_128.csv",
+  "output": "data/processed/activation_features_validation_128.npz",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "device": "cpu",
+  "max_length": 256,
+  "layer_index": 22,
+  "feature_dim": 896,
+  "num_rows": 128,
+  "batch_size": 8,
+  "elapsed_s": 69.77854954198119,
+  "avg_batch_latency_ms": 3843.4614791895,
+  "avg_tokens_per_batch": 815.3125
+}

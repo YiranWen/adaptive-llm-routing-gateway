@@ -1,0 +1,17 @@
+torch
+transformers
+accelerate
+safetensors
+datasets
+pandas
+numpy
+scikit-learn
+matplotlib
+tqdm
+streamlit
+pyyaml
+pytest
+psutil
+requests
+fastapi
+uvicorn
