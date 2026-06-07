@@ -29,6 +29,7 @@ class NeuralRoutePrediction:
     predicted_utility_cloud: float
     raw_utility_gap: float
     cloud_margin: float
+    decision_reason: str
     action: int
     route: str
 
@@ -79,13 +80,13 @@ def adjusted_cloud_margin(
 ) -> float:
     """Apply demo-time prompt heuristic to the dev-tuned margin."""
 
-    margin = float(base_margin)
+    margin = max(float(base_margin), 0.0)
     if flags.get("is_simple_factual_short"):
         margin += 0.05
-        margin = max(margin, 0.10)
+        margin = max(margin, 0.15)
     if flags.get("is_complex"):
         margin -= 0.03
-    return float(np.clip(margin, -0.20, 0.25))
+    return float(np.clip(margin, 0.0, 0.25))
 
 
 def predict_neural_route(
@@ -119,12 +120,21 @@ def predict_neural_route(
     base_margin = default_cloud_margin(bundle, sla_mode)
     margin = adjusted_cloud_margin(base_margin=base_margin, flags=prompt_flags)
     raw_gap = float(predicted[LARGE] - predicted[SMALL])
-    action = LARGE if raw_gap >= margin else SMALL
+    if raw_gap <= 0.0:
+        action = SMALL
+        decision_reason = "local_utility_not_lower"
+    elif raw_gap >= margin:
+        action = LARGE
+        decision_reason = "cloud_gain_exceeded_margin"
+    else:
+        action = SMALL
+        decision_reason = "cloud_gain_below_margin"
     return NeuralRoutePrediction(
         predicted_utility_local=float(predicted[SMALL]),
         predicted_utility_cloud=float(predicted[LARGE]),
         raw_utility_gap=raw_gap,
         cloud_margin=margin,
+        decision_reason=decision_reason,
         action=action,
         route="cloud" if action == LARGE else "local",
     )

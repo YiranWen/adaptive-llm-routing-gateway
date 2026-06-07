@@ -106,6 +106,15 @@ def prompt_complexity_flags(prompt: str) -> dict[str, object]:
     contains_math_symbols = bool(
         re.search(r"[=+\-*/^∑√≤≥<>]|\b(solve|equation|integral|derivative)\b", normalized)
     )
+    contains_simple_arithmetic_pattern = bool(
+        re.match(
+            r"^\s*\d+(\.\d+)?\s*[+\-*/]\s*\d+(\.\d+)?\s*(=|\?|$|equal|equals|is)?",
+            normalized,
+        )
+    )
+    contains_greeting_pattern = bool(
+        re.match(r"^(hi|hello|hey|how are you|good morning|good afternoon|good evening)\b", normalized)
+    )
     contains_code_keywords = any(keyword in normalized for keyword in CODE_KEYWORDS)
     contains_reasoning_keywords = any(keyword in normalized for keyword in REASONING_KEYWORDS)
     contains_simple_factual_pattern = bool(
@@ -114,14 +123,17 @@ def prompt_complexity_flags(prompt: str) -> dict[str, object]:
     is_short = len(words) <= 12
     is_long = len(words) >= 45
     is_simple_factual_short = (
-        contains_simple_factual_pattern
+        (
+            contains_simple_factual_pattern
+            or contains_simple_arithmetic_pattern
+            or contains_greeting_pattern
+        )
         and is_short
-        and not contains_math_symbols
         and not contains_code_keywords
         and not contains_reasoning_keywords
     )
     is_complex = (
-        contains_math_symbols
+        (contains_math_symbols and not contains_simple_arithmetic_pattern)
         or contains_code_keywords
         or contains_reasoning_keywords
         or is_long
@@ -129,6 +141,8 @@ def prompt_complexity_flags(prompt: str) -> dict[str, object]:
     return {
         "prompt_length_words": len(words),
         "contains_math_symbols": contains_math_symbols,
+        "contains_simple_arithmetic_pattern": contains_simple_arithmetic_pattern,
+        "contains_greeting_pattern": contains_greeting_pattern,
         "contains_code_keywords": contains_code_keywords,
         "contains_reasoning_keywords": contains_reasoning_keywords,
         "contains_simple_factual_pattern": contains_simple_factual_pattern,
@@ -414,7 +428,11 @@ def main() -> None:
 
         if prediction.action == LARGE:
             st.info(
-                "Cloud selected because predicted utility gain exceeded the SLA margin."
+                "Cloud selected because predicted cloud utility exceeded local utility by the required SLA margin."
+            )
+        elif prediction.raw_utility_gap <= 0:
+            st.info(
+                "Local selected because predicted local utility is greater than or equal to predicted cloud utility."
             )
         else:
             st.info(
