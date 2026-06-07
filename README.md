@@ -293,7 +293,8 @@ python scripts/cache_activation_features.py
 │   ├── traditional_evaluation_summary.md
 │   └── utility_regression_evaluation_summary.md
 ├── models/
-│   └── utility_prediction_realtime.pkl
+│   ├── utility_prediction_realtime.pkl
+│   └── neural_utility_router.pkl
 ├── results/
 │   ├── realtime_aligned_metrics.csv
 │   ├── utility_router_regret_metrics.csv
@@ -325,7 +326,7 @@ python scripts/cache_activation_features.py
 
 ## Future Work
 
-- Replace Ridge Regression with a stronger nonlinear utility model such as an MLP regressor, gradient boosting, or tree ensemble.
+- Improve the Neural Utility Router with more real traffic logs, stronger nonlinear models, or model ensembles.
 - Collect real local/cloud latency and cost logs.
 - Add a multi-backend model registry with more than two route choices.
 - Learn online from user feedback and observed outcomes.

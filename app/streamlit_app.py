@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import pickle
 import re
 import sys
 import time
@@ -21,24 +20,25 @@ if str(SRC) not in sys.path:
 
 from llm_router.config import ModelConfig
 from llm_router.feature_extractor import MechanisticFeatureExtractor
+from llm_router.neural_runtime import (
+    DEFAULT_NEURAL_MODEL_PATH,
+    default_cloud_margin,
+    load_neural_router_bundle,
+    predict_neural_route,
+)
 from llm_router.realtime import (
     DEFAULT_REMOTE_COST_PER_REQUEST,
     LARGE,
-    SMALL,
     make_system_features,
 )
 from llm_router.utilities import SLA_MODES
 
 
-MODEL_PATH = ROOT / "models" / "utility_prediction_realtime.pkl"
+MODEL_PATH = DEFAULT_NEURAL_MODEL_PATH
 FALLBACK_FEATURES_PATH = ROOT / "data" / "processed" / "activation_features_train_512.npz"
 DEFAULT_LOCAL_LATENCY = 0.8
 DEFAULT_CLOUD_LATENCY = 1.4
-CLOUD_MARGINS = {
-    "quality_first": 0.07,
-    "balanced": 0.04,
-    "cost_sensitive": 0.02,
-}
+DEFAULT_QWEN_MAX_LENGTH = 128
 CODE_KEYWORDS = {
     "code",
     "function",
@@ -68,14 +68,13 @@ st.set_page_config(page_title="Adaptive LLM Routing Gateway", layout="wide")
 
 @st.cache_resource
 def load_router_bundle() -> dict[str, object]:
-    with MODEL_PATH.open("rb") as file:
-        return pickle.load(file)
+    return load_neural_router_bundle(MODEL_PATH)
 
 
 @st.cache_resource
-def load_feature_extractor() -> MechanisticFeatureExtractor:
+def load_feature_extractor(max_length: int) -> MechanisticFeatureExtractor:
     return MechanisticFeatureExtractor(
-        ModelConfig(max_length=256, device="auto", layer_offset=-2)
+        ModelConfig(max_length=max_length, device="auto", layer_offset=-2)
     )
 
 
@@ -139,23 +138,28 @@ def prompt_complexity_flags(prompt: str) -> dict[str, object]:
     }
 
 
-def final_cloud_margin(sla_name: str, flags: dict[str, object]) -> float:
-    margin = CLOUD_MARGINS[sla_name]
-    if flags["is_simple_factual_short"]:
-        margin += 0.05
-    if flags["is_complex"]:
-        margin -= 0.03
-    return max(0.0, margin)
+@st.cache_data(show_spinner=False, max_entries=64)
+def extract_real_qwen_feature_cached(prompt: str, max_length: int) -> tuple[np.ndarray, float]:
+    result = load_feature_extractor(max_length).extract(prompt)
+    return result.features.astype(np.float32), result.elapsed_ms / 1000.0
 
 
-def extract_prompt_feature(prompt: str, use_cached_fallback: bool) -> tuple[np.ndarray, str, float]:
+def extract_prompt_feature(
+    prompt: str,
+    *,
+    use_cached_fallback: bool,
+    qwen_max_length: int,
+) -> tuple[np.ndarray, str, float]:
     if use_cached_fallback:
         return cached_prompt_feature(prompt), "cached fallback", 0.0
 
     started = time.perf_counter()
     try:
-        result = load_feature_extractor().extract(prompt)
-        return result.features.astype(np.float32), "Qwen activation", result.elapsed_ms / 1000.0
+        feature, model_forward_s = extract_real_qwen_feature_cached(prompt, qwen_max_length)
+        elapsed = time.perf_counter() - started
+        if elapsed < 0.05:
+            return feature, "Qwen activation (prompt cache hit)", elapsed
+        return feature, "Qwen activation", model_forward_s
     except Exception as exc:
         st.warning(f"Qwen extraction failed; using cached fallback. Error: {exc}")
         elapsed = time.perf_counter() - started
@@ -202,12 +206,12 @@ def call_openai(prompt: str, api_key: str, model_name: str) -> tuple[str, float]
 
 def main() -> None:
     st.title("Real-Time LLM Routing Gateway")
-    st.caption("Final demo path: Qwen features + live system state -> Utility Prediction router")
+    st.caption("Final demo path: Qwen features + live system state -> Neural Utility Router")
 
     if not MODEL_PATH.exists():
         st.error(
             "Router model artifact not found. Run: "
-            "`python scripts/evaluate_realtime_aligned.py`"
+            "`python scripts/evaluate_neural_utility_router.py`"
         )
         return
 
@@ -219,6 +223,7 @@ def main() -> None:
         st.session_state.cloud_latency_avg = DEFAULT_CLOUD_LATENCY
 
     bundle = load_router_bundle()
+    neural_meta = bundle.get("neural_meta", {})
 
     with st.sidebar:
         st.header("Routing Controls")
@@ -246,6 +251,18 @@ def main() -> None:
             value=False,
             help="Slower but encodes the exact typed prompt. Default uses cached fallback for speed.",
         )
+        qwen_max_length = st.slider(
+            "Qwen max tokens",
+            min_value=64,
+            max_value=256,
+            value=DEFAULT_QWEN_MAX_LENGTH,
+            step=32,
+            help="Lower values make real Qwen extraction faster. Cached fallback ignores this.",
+        )
+        if st.button("Preload Qwen model"):
+            with st.spinner("Loading Qwen feature extractor once..."):
+                load_feature_extractor(qwen_max_length).load()
+            st.success("Qwen feature extractor is loaded and cached.")
         override_system_metrics = st.checkbox(
             "Override live system metrics for testing",
             value=False,
@@ -286,6 +303,18 @@ def main() -> None:
             "Cloud API key",
             value=os.environ.get("OPENAI_API_KEY", ""),
             type="password",
+        )
+
+        st.divider()
+        st.header("Router Model")
+        st.caption("Neural Utility Router")
+        st.write(
+            {
+                "hidden_dims": neural_meta.get("hidden_dims"),
+                "dropout": neural_meta.get("dropout"),
+                "selected_epoch": neural_meta.get("best_epoch"),
+                "base_cloud_margin": default_cloud_margin(bundle, sla_name),
+            }
         )
 
     prompt = st.text_area(
@@ -335,34 +364,32 @@ def main() -> None:
         prompt_feature, feature_source, extraction_s = extract_prompt_feature(
             prompt,
             use_cached_fallback=not use_real_qwen,
+            qwen_max_length=qwen_max_length,
         )
-        context = np.concatenate([prompt_feature, system_features], axis=0).reshape(1, -1)
-        model = bundle["models"][sla_name]
-        predicted = model.predict(context).reshape(-1)
-
-        sla = SLA_MODES[sla_name]
-        default_cost = bundle["scenario"].get(
-            "remote_cost_per_request",
-            DEFAULT_REMOTE_COST_PER_REQUEST,
-        )
-        default_effective_cost = default_cost / max(budget_remaining_norm, 0.05)
-        actual_effective_cost = cloud_cost / max(budget_remaining_norm, 0.05)
-        adjusted = predicted.copy()
-        adjusted[LARGE] -= sla.alpha_cost * (actual_effective_cost - default_effective_cost)
-
         flags = prompt_complexity_flags(prompt)
-        cloud_margin = final_cloud_margin(sla_name, flags)
-        raw_utility_gap = float(adjusted[LARGE] - adjusted[SMALL])
-        action = LARGE if raw_utility_gap >= cloud_margin else SMALL
-        route = "cloud" if action == LARGE else "local"
-        estimated_cost = actual_effective_cost if action == LARGE else 0.0
-        estimated_latency = estimated_cloud_latency if action == LARGE else estimated_local_latency
+        prediction = predict_neural_route(
+            bundle=bundle,
+            prompt_feature=prompt_feature,
+            system_features=system_features,
+            sla_mode=sla_name,
+            estimated_cloud_cost=float(cloud_cost),
+            budget_remaining=float(budget_remaining_norm),
+            prompt_flags=flags,
+        )
+        route = prediction.route
+        actual_effective_cost = cloud_cost / max(budget_remaining_norm, 0.05)
+        estimated_cost = actual_effective_cost if prediction.action == LARGE else 0.0
+        estimated_latency = (
+            estimated_cloud_latency
+            if prediction.action == LARGE
+            else estimated_local_latency
+        )
 
         st.subheader("Routing Decision")
         r1, r2, r3, r4 = st.columns(4)
         r1.metric("Selected route", route.upper())
-        r2.metric("Predicted local utility", f"{adjusted[SMALL]:.3f}")
-        r3.metric("Predicted cloud utility", f"{adjusted[LARGE]:.3f}")
+        r2.metric("Predicted local utility", f"{prediction.predicted_utility_local:.3f}")
+        r3.metric("Predicted cloud utility", f"{prediction.predicted_utility_cloud:.3f}")
         r4.metric("Feature source", feature_source)
 
         if "cached fallback" in feature_source:
@@ -379,12 +406,13 @@ def main() -> None:
                 "estimated_latency": round(float(estimated_latency), 4),
                 "budget_remaining_normalized": round(float(budget_remaining_norm), 4),
                 "qwen_or_fallback_feature_seconds": round(float(extraction_s), 4),
-                "model_pca_dim": bundle["scenario"].get(f"{sla_name}_pca_dim"),
-                "model_ridge_alpha": bundle["scenario"].get(f"{sla_name}_ridge_alpha"),
+                "router_model": "Neural Utility Router",
+                "hidden_dims": neural_meta.get("hidden_dims"),
+                "best_epoch": neural_meta.get("best_epoch"),
             }
         )
 
-        if action == LARGE:
+        if prediction.action == LARGE:
             st.info(
                 "Cloud selected because predicted utility gain exceeded the SLA margin."
             )
@@ -410,11 +438,11 @@ def main() -> None:
             )
             st.json(
                 {
-                    "predicted_local_utility": round(float(adjusted[SMALL]), 6),
-                    "predicted_cloud_utility": round(float(adjusted[LARGE]), 6),
-                    "raw_utility_gap": round(raw_utility_gap, 6),
-                    "base_cloud_margin": CLOUD_MARGINS[sla_name],
-                    "final_cloud_margin": round(float(cloud_margin), 6),
+                    "predicted_local_utility": round(prediction.predicted_utility_local, 6),
+                    "predicted_cloud_utility": round(prediction.predicted_utility_cloud, 6),
+                    "raw_utility_gap": round(prediction.raw_utility_gap, 6),
+                    "base_cloud_margin": default_cloud_margin(bundle, sla_name),
+                    "final_cloud_margin": round(prediction.cloud_margin, 6),
                     "prompt_complexity_flags": flags,
                     "final_route": route,
                     "feature_source": feature_source,

@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import pickle
 import re
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -17,17 +16,20 @@ import numpy as np
 from llm_router.backends import BackendResult, call_ollama, call_openai
 from llm_router.config import ModelConfig
 from llm_router.feature_extractor import MechanisticFeatureExtractor
+from llm_router.neural_runtime import (
+    DEFAULT_NEURAL_MODEL_PATH,
+    load_neural_router_bundle,
+    predict_neural_route,
+)
 from llm_router.realtime import (
     DEFAULT_REMOTE_COST_PER_REQUEST,
-    LARGE,
-    SMALL,
     make_system_features,
 )
 from llm_router.utilities import SLA_MODES
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MODEL_PATH = ROOT / "models" / "utility_prediction_realtime.pkl"
+DEFAULT_MODEL_PATH = DEFAULT_NEURAL_MODEL_PATH
 DEFAULT_FEATURE_CACHE = ROOT / "data" / "processed" / "activation_features_train_512.npz"
 DEFAULT_LOG_PATH = ROOT / "logs" / "routing_requests.jsonl"
 DEFAULT_LOCAL_MODEL = "qwen2.5:0.5b"
@@ -172,12 +174,12 @@ class RoutingGateway:
         self._bundle: dict[str, Any] | None = None
         self._features: np.ndarray | None = None
         self._extractor: MechanisticFeatureExtractor | None = None
+        self._prompt_feature_cache: dict[str, np.ndarray] = {}
 
     @property
     def bundle(self) -> dict[str, Any]:
         if self._bundle is None:
-            with self.model_path.open("rb") as file:
-                self._bundle = pickle.load(file)
+            self._bundle = load_neural_router_bundle(self.model_path)
         return self._bundle
 
     @property
@@ -201,13 +203,21 @@ class RoutingGateway:
             "model_loaded": self.model_path.exists(),
             "feature_cache_loaded": self.feature_cache_path.exists(),
             "feature_mode": self.feature_mode,
+            "router_model": "Neural Utility Router",
         }
 
     def prompt_feature(self, prompt: str) -> tuple[np.ndarray, str]:
         if self.feature_mode == "qwen":
+            cache_key = prompt_hash(prompt)
+            if cache_key in self._prompt_feature_cache:
+                return self._prompt_feature_cache[cache_key], "real Qwen extraction (prompt cache hit)"
             try:
                 result = self.extractor.extract(prompt)
-                return result.features.astype(np.float32), "real Qwen extraction"
+                feature = result.features.astype(np.float32)
+                if len(self._prompt_feature_cache) >= 128:
+                    self._prompt_feature_cache.pop(next(iter(self._prompt_feature_cache)))
+                self._prompt_feature_cache[cache_key] = feature
+                return feature, "real Qwen extraction"
             except Exception:
                 pass
         features = self.cached_features
@@ -261,45 +271,37 @@ class RoutingGateway:
             session_budget=session_budget,
             spent_so_far=spent_so_far,
         )
-        context = np.concatenate([prompt_feature, system_features], axis=0).reshape(1, -1)
-        model = self.bundle["models"][sla_mode]
-        predicted = model.predict(context).reshape(-1).astype(float)
-
-        sla = SLA_MODES[sla_mode]
-        default_cost = self.bundle["scenario"].get(
-            "remote_cost_per_request",
-            DEFAULT_REMOTE_COST_PER_REQUEST,
-        )
-        default_effective_cost = default_cost / max(budget_remaining, 0.05)
-        actual_effective_cost = estimated_cloud_cost / max(budget_remaining, 0.05)
-        adjusted = predicted.copy()
-        adjusted[LARGE] -= sla.alpha_cost * (actual_effective_cost - default_effective_cost)
-
         flags = prompt_complexity_flags(prompt)
-        margin = final_cloud_margin(sla_mode, flags)
-        raw_gap = float(adjusted[LARGE] - adjusted[SMALL])
-        action = LARGE if raw_gap >= margin else SMALL
-        route = "cloud" if action == LARGE else "local"
-        estimated_cost = actual_effective_cost if action == LARGE else 0.0
-        estimated_latency = cloud_latency if action == LARGE else local_latency
+        prediction = predict_neural_route(
+            bundle=self.bundle,
+            prompt_feature=prompt_feature,
+            system_features=system_features,
+            sla_mode=sla_mode,
+            estimated_cloud_cost=estimated_cloud_cost,
+            budget_remaining=budget_remaining,
+            prompt_flags=flags,
+        )
+        actual_effective_cost = estimated_cloud_cost / max(budget_remaining, 0.05)
+        estimated_cost = actual_effective_cost if prediction.route == "cloud" else 0.0
+        estimated_latency = cloud_latency if prediction.route == "cloud" else local_latency
         explanation = (
             "Cloud selected because predicted utility gain exceeded the SLA margin."
-            if action == LARGE
+            if prediction.route == "cloud"
             else "Local selected because cloud utility gain was too small to justify escalation."
         )
 
         return RouteDecision(
-            route=route,
-            predicted_utility_local=float(adjusted[SMALL]),
-            predicted_utility_cloud=float(adjusted[LARGE]),
+            route=prediction.route,
+            predicted_utility_local=prediction.predicted_utility_local,
+            predicted_utility_cloud=prediction.predicted_utility_cloud,
             estimated_cost=float(estimated_cost),
             estimated_latency=float(estimated_latency),
             feature_source=feature_source,
             explanation=explanation,
             prompt_hash=prompt_hash(prompt),
             sla_mode=sla_mode,
-            raw_utility_gap=raw_gap,
-            cloud_margin=float(margin),
+            raw_utility_gap=prediction.raw_utility_gap,
+            cloud_margin=prediction.cloud_margin,
         )
 
     def chat(

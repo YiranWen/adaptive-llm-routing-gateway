@@ -13,10 +13,10 @@ action = local or cloud
 objective = utility = quality - alpha * cost - beta * latency
 ```
 
-The selected router is the realtime Utility Prediction model saved at:
+The selected runtime router is the Neural Utility Router saved at:
 
 ```text
-models/utility_prediction_realtime.pkl
+models/neural_utility_router.pkl
 ```
 
 ## Files
@@ -24,7 +24,8 @@ models/utility_prediction_realtime.pkl
 | File | Role |
 | --- | --- |
 | `api_server.py` | FastAPI app with `/health`, `/route`, and `/chat` endpoints. |
-| `src/llm_router/gateway.py` | Loads the Utility Prediction model, builds the 902D context vector, predicts local/cloud utilities, selects the route, and writes request logs. |
+| `src/llm_router/gateway.py` | Loads the Neural Utility Router, builds the context vector, predicts local/cloud utilities, selects the route, and writes request logs. |
+| `src/llm_router/neural_runtime.py` | Shared runtime helper for Neural Utility Router prediction and cloud-margin routing. |
 | `src/llm_router/backends.py` | Optional generation backends for local Ollama and OpenAI cloud calls with safe fallback behavior. |
 | `logs/routing_requests.jsonl` | Append-only JSONL request log. |
 | `app/streamlit_app.py` | Debug dashboard, not the production gateway. |
@@ -124,7 +125,7 @@ To use real Qwen feature extraction in the gateway, start the server with:
 LLM_ROUTER_FEATURE_MODE=qwen python -m uvicorn api_server:app --host 0.0.0.0 --port 8000
 ```
 
-Real extraction uses `Qwen/Qwen2.5-0.5B-Instruct` through the project feature extractor. Cached fallback does not semantically encode the exact incoming prompt, so it is best treated as a fast demo/testing mode.
+Real extraction uses `Qwen/Qwen2.5-0.5B-Instruct` through the project feature extractor. Cached fallback does not semantically encode the exact incoming prompt, so it is best treated as a fast demo/testing mode. When real Qwen extraction is enabled, the gateway keeps an in-memory prompt feature cache so repeated prompts do not repeat the forward pass.
 
 ## Logging
 
@@ -148,7 +149,7 @@ The prompt itself is not logged; only a short SHA-256 hash is stored.
 ## Current Limitations
 
 - The final router is trained on a 512/128 offline split with synthetic serving-state augmentation.
-- The model is a Utility Prediction router, not a fully live-trained reinforcement learning agent.
+- The model is a Neural Utility Prediction router, not a fully live-trained reinforcement learning agent.
 - The default API feature mode uses cached fallback features for responsiveness.
 - Cost and latency are estimated rather than measured from every possible provider/model combination.
 - Ollama must be installed and running for real local generation.

@@ -5,8 +5,8 @@ This document explains the current simplified project scope end to end. It is in
 The final project is now aligned around a **real-time LLM routing gateway**:
 
 - **Main offline comparison:** MLP classifier baseline vs Utility Prediction router.
-- **Final selected router:** Utility Prediction.
-- **Demo:** Streamlit app using Utility Prediction with live system/budget/latency features.
+- **Final selected router:** Neural Utility Router.
+- **Demo:** Streamlit app using the Neural Utility Router with live system/budget/latency features.
 
 ---
 
@@ -595,7 +595,7 @@ This tuning is selected on the 128-prompt validation split after augmentation, s
 ### Saved Model Artifact
 
 ```text
-models/utility_prediction_realtime.pkl
+models/neural_utility_router.pkl
 ```
 
 This artifact stores a per-SLA utility-prediction model and metadata such as context dimension, Qwen dimension, and selected PCA/ridge settings.
@@ -643,7 +643,7 @@ results/realtime_utility_prediction_ablation.csv
 results/plots/realtime_aligned_policy_comparison.png
 results/plots/realtime_aligned_cost_latency_tradeoff.png
 results/plots/realtime_aligned_cloud_rate.png
-models/utility_prediction_realtime.pkl
+models/neural_utility_router.pkl
 ```
 
 Command:
@@ -777,7 +777,7 @@ flowchart TD
     H["Budget + cloud cost + latency estimates"] --> G
     E --> I["902D context"]
     G --> I
-    I --> J["Load utility_prediction_realtime.pkl"]
+    I --> J["Load neural_utility_router.pkl"]
     J --> K["Predict local/cloud utility"]
     K --> L{"Higher utility"}
     L -->|local| M["Route local"]
@@ -855,7 +855,7 @@ The final report should frame the system as a utility-aware LLM routing gateway 
 |---|---|
 | `src/llm_router/realtime.py` | Real-time context augmentation and utility logic |
 | `scripts/evaluate_realtime_aligned.py` | Main final offline experiment |
-| `models/utility_prediction_realtime.pkl` | Final router model artifact for demo |
+| `models/neural_utility_router.pkl` | Final Neural Utility Router artifact for demo |
 | `app/streamlit_app.py` | Real-time Streamlit routing gateway |
 | `results/realtime_aligned_metrics.csv` | Final aligned metrics |
 | `results/realtime_utility_prediction_ablation.csv` | Utility Prediction tuning results |
