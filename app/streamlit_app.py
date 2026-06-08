@@ -461,6 +461,7 @@ def main() -> None:
                     "raw_utility_gap": round(prediction.raw_utility_gap, 6),
                     "base_cloud_margin": default_cloud_margin(bundle, sla_name),
                     "final_cloud_margin": round(prediction.cloud_margin, 6),
+                    "decision_reason": prediction.decision_reason,
                     "prompt_complexity_flags": flags,
                     "final_route": route,
                     "feature_source": feature_source,

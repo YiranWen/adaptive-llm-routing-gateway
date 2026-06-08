@@ -77,6 +77,7 @@ def adjusted_cloud_margin(
     *,
     base_margin: float,
     flags: dict[str, Any],
+    system_features: np.ndarray | None = None,
 ) -> float:
     """Apply demo-time prompt heuristic to the dev-tuned margin."""
 
@@ -86,6 +87,22 @@ def adjusted_cloud_margin(
         margin = max(margin, 0.15)
     if flags.get("is_complex"):
         margin -= 0.03
+
+    if system_features is not None:
+        system = np.asarray(system_features, dtype=np.float32).reshape(-1)
+        if len(system) >= 6:
+            cpu, memory, battery, _, local_latency, cloud_latency = system[:6]
+            local_latency_disadvantage = float(local_latency - cloud_latency)
+            local_system_pressure = (
+                cpu >= 0.85
+                or memory >= 0.90
+                or battery <= 0.10
+                or local_latency_disadvantage >= 0.25
+            )
+            if local_system_pressure:
+                margin -= 0.08
+                if flags.get("is_simple_factual_short"):
+                    margin = min(margin, 0.01)
     return float(np.clip(margin, 0.0, 0.25))
 
 
@@ -118,7 +135,11 @@ def predict_neural_route(
     predicted[LARGE] -= sla.alpha_cost * (actual_effective_cost - default_effective_cost)
 
     base_margin = default_cloud_margin(bundle, sla_mode)
-    margin = adjusted_cloud_margin(base_margin=base_margin, flags=prompt_flags)
+    margin = adjusted_cloud_margin(
+        base_margin=base_margin,
+        flags=prompt_flags,
+        system_features=system_features,
+    )
     raw_gap = float(predicted[LARGE] - predicted[SMALL])
     if raw_gap <= 0.0:
         action = SMALL

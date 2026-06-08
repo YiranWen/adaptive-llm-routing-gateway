@@ -1,0 +1,19 @@
+prompt,Qwen feature,6D system state,scores,label,utility target,oracle
+Do vitamins boost your immune system?,"896D vector
+[-0.52, 0.96, 0.20, -1.77, 0.54, ...]","cpu=0.29, mem=0.95
+batt=0.88, budget=0.58
+local_lat=0.72s, cloud_lat=1.19s","small=1.00
+cloud=1.00",failure=0,"local=0.96
+cloud=0.92",local
+write the game 'snake' in Python. Use turtle,"896D vector
+[-0.42, 0.93, 0.38, -1.89, 0.44, ...]","cpu=0.12, mem=0.40
+batt=0.22, budget=0.32
+local_lat=0.41s, cloud_lat=1.13s","small=0.40
+cloud=1.00",failure=1,"local=0.38
+cloud=0.91",cloud
+Come up with an opening phrase to approach a potential client.,"896D vector
+[-0.21, 0.66, 0.16, -2.08, 0.35, ...]","cpu=0.44, mem=0.65
+batt=0.37, budget=0.65
+local_lat=0.76s, cloud_lat=1.10s","small=0.60
+cloud=1.00",failure=1,"local=0.56
+cloud=0.93",cloud
