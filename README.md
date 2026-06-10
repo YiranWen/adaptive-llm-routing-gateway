@@ -151,11 +151,9 @@ The Qwen activation features also provide useful semantic signal for local-failu
 Core result files:
 
 - `results/neural_utility_comparison_metrics.csv`
-- `results/realtime_aligned_metrics.csv`
-- `results/utility_router_regret_metrics.csv`
-- `results/utility_router_regression_error_metrics.csv`
-- `results/utility_router_margin_accuracy.csv`
 - `results/mlp_classifier_metrics.csv`
+- `results/dataset_raw_routellm_gpt4_sample.csv`
+- `results/dataset_augmented_router_training_sample.csv`
 
 The checked-in `results/plots/` folder keeps only the final report-facing figures,
 not every intermediate diagnostic plot.
@@ -255,19 +253,18 @@ The project does not require OpenAI for offline evaluation, smoke tests, or rout
 
 ## Reproduce the Offline Experiment
 
-Main real-time aligned experiment:
-
-```bash
-python scripts/evaluate_realtime_aligned.py
-```
-
-Traditional ML evaluation:
+Main neural utility routing experiment:
 
 ```bash
 python scripts/evaluate_neural_utility_router.py
-python scripts/evaluate_traditional_ml.py
-python scripts/evaluate_utility_regression_metrics.py
+```
+
+Classifier baseline and final comparison figures:
+
+```bash
+python scripts/evaluate_mlp_classifier.py
 python scripts/plot_classifier_roc_curves.py
+python scripts/plot_neural_vs_ridge.py
 ```
 
 Dataset preparation and feature caching scripts are included, but the repository only keeps a small final 512/128 processed sample for reproducibility:
@@ -289,22 +286,20 @@ python scripts/cache_activation_features.py
 │   └── processed/            # small 512/128 final sample artifacts
 ├── docs/
 │   ├── deployment_gateway.md
-│   ├── project_walkthrough.md
-│   ├── traditional_evaluation_summary.md
-│   └── utility_regression_evaluation_summary.md
+│   └── final_project_report.txt
 ├── models/
-│   ├── utility_prediction_realtime.pkl
 │   └── neural_utility_router.pkl
 ├── results/
-│   ├── realtime_aligned_metrics.csv
-│   ├── utility_router_regret_metrics.csv
+│   ├── neural_utility_comparison_metrics.csv
+│   ├── mlp_classifier_metrics.csv
 │   └── plots/
 ├── scripts/
 │   ├── prepare_dataset.py
 │   ├── cache_activation_features.py
-│   ├── evaluate_realtime_aligned.py
-│   ├── evaluate_traditional_ml.py
-│   └── evaluate_utility_regression_metrics.py
+│   ├── evaluate_mlp_classifier.py
+│   ├── evaluate_neural_utility_router.py
+│   ├── plot_classifier_roc_curves.py
+│   └── plot_neural_vs_ridge.py
 ├── src/llm_router/
 │   ├── feature_extractor.py
 │   ├── mlp_router.py
@@ -332,7 +327,3 @@ python scripts/cache_activation_features.py
 - Learn online from user feedback and observed outcomes.
 - Add privacy and safety constraints so sensitive prompts can be forced local.
 - Evaluate exact deployed local models rather than using proxy quality labels.
-
-## License
-
-This repository was created as a university final project. Add a license file before broad reuse.
